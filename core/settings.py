@@ -1,6 +1,6 @@
 # Import dj-database-url at the beginning of the file.
 import dj_database_url 
-
+import dotenv
 from pathlib import Path
 import os
 from datetime import timedelta
@@ -8,15 +8,19 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+dotenv.load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a_#fr-t#7laod7!1#9c7r-m4la(-3@hygn*sb8kv34iz!2ju$0'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-a_#fr-t#7laod7!1#9c7r-m4la(-3@hygn*sb8kv34iz!2ju$0')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
+PRODUCTION= os.getenv('PRODUCTION', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '.onrender.com').split(',')
 

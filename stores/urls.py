@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import (
     StoreViewSet, SubscriptionViewSet, BillViewSet,
-    CreateSubscriptionBillView, AddStaffView, ReduceStaffView, PayBillView
+    CreateSubscriptionBillView, AddStaffView, ReduceStaffView, PayBillView,
+    PaystackCallbackView, PaystackWebhookView
 )
 
 router = routers.DefaultRouter()
@@ -15,5 +16,7 @@ urlpatterns = [
     path('subscriptions/add-staff/', AddStaffView.as_view(), name='add-staff'),
     path('subscriptions/reduce-staff/', ReduceStaffView.as_view(), name='reduce-staff'),
     path('bills/<int:pk>/pay/', PayBillView.as_view(), name='pay-bill'),
+    path('payments/callback/', PaystackCallbackView.as_view(), name='paystack-callback'),
+    path('payments/webhook/', PaystackWebhookView.as_view(), name='paystack-webhook'),
     path('', include(router.urls)),
 ]

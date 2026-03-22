@@ -128,35 +128,106 @@ class ReduceStaffView(views.APIView):
         
         return Response({"message": f"Successfully reduced staff by {count}. Next bill updated."})
 
+def apply_bill_action(bill):
+    """Business logic to apply effects of a paid bill."""
+    if bill.status != 'Paid':
+        bill.status = 'Paid'
+        bill.paid_at = timezone.now()
+        bill.save()
+        
+    if bill.bill_type == 'NewSubscription':
+         # Assuming monthly for now
+         exp = timezone.now().date() + timezone.timedelta(days=30)
+         plan = 'Basic' if 'Basic' in bill.description else 'Premium'
+         Subscription.objects.create(
+             store=bill.store, plan_type=plan, expiry_date=exp,
+             payment_status='Paid', max_staff=2
+         )
+    elif bill.bill_type == 'StaffAddition':
+         sub = bill.subscription
+         if sub:
+             sub.max_staff += bill.staff_count_change
+             sub.next_billing_amount += (bill.staff_count_change * sub.amount_per_staff)
+             sub.save()
+
+class PaystackCallbackView(views.APIView):
+    """User returns here after payment."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        reference = request.query_params.get('reference')
+        if not reference:
+            return Response({"error": "No reference provided"}, status=400)
+            
+        # Verify with Paystack
+        import requests
+        from django.conf import settings
+        url = f"https://api.paystack.co/transaction/verify/{reference}"
+        headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        
+        if data.get('status') and data['data']['status'] == 'success':
+            try:
+                bill = Bill.objects.get(reference=reference)
+                if bill.status == 'Pending':
+                    apply_bill_action(bill)
+                return Response({"message": "Payment verified and applied."})
+            except Bill.DoesNotExist:
+                return Response({"error": "Bill not found"}, status=404)
+        
+        return Response({"error": "Payment verification failed"}, status=400)
+
+class PaystackWebhookView(views.APIView):
+    """Server-to-server notification from Paystack."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        import hmac
+        import hashlib
+        from django.conf import settings
+        
+        signature = request.headers.get('x-paystack-signature')
+        if not signature:
+            return Response(status=400)
+            
+        # Verify signature
+        payload = request.body
+        computed_signature = hmac.new(
+            settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
+            payload,
+            hashlib.sha512
+        ).hexdigest()
+        
+        if computed_signature != signature:
+            return Response(status=400)
+            
+        data = request.data
+        if data['event'] == 'charge.success':
+            reference = data['data']['reference']
+            try:
+                bill = Bill.objects.get(reference=reference)
+                if bill.status == 'Pending':
+                    apply_bill_action(bill)
+            except Bill.DoesNotExist:
+                pass # Or log error
+                
+        return Response(status=200)
+
 class PayBillView(views.APIView):
+    """Endpoint for frontend to get payment URL or simulate payment."""
     permission_classes = [IsStoreOwner]
 
     def post(self, request, pk):
+        # In production, this should return a Paystack checkout URL
+        # For now, keeping partial simulation but adding Paystack metadata logic
         try:
             bill = Bill.objects.get(id=pk, store__owner=request.user, status='Pending')
-            # Here we would normally redirect to a payment gateway
-            # Simulating successful payment for now
-            bill.status = 'Paid'
-            bill.paid_at = timezone.now()
-            bill.save()
-            
-            # Action based on bill type
-            if bill.bill_type == 'NewSubscription':
-                 # Already handled or create sub here
-                 # Assuming monthly for now
-                 exp = timezone.now().date() + timezone.timedelta(days=30)
-                 # Guessing plan from description for simplicity in this mockup
-                 plan = 'Basic' if 'Basic' in bill.description else 'Premium'
-                 Subscription.objects.create(
-                     store=bill.store, plan_type=plan, expiry_date=exp,
-                     payment_status='Paid', max_staff=2
-                 )
-            elif bill.bill_type == 'StaffAddition':
-                 sub = bill.subscription
-                 sub.max_staff += bill.staff_count_change
-                 sub.next_billing_amount += (bill.staff_count_change * sub.amount_per_staff)
-                 sub.save()
-                 
-            return Response({"message": "Bill paid and action applied."})
+            # Mocking the initialization of a Paystack transaction
+            return Response({
+                "checkout_url": f"https://checkout.paystack.com/mock-{bill.reference}",
+                "reference": bill.reference,
+                "amount": float(bill.amount)
+            })
         except Bill.DoesNotExist:
              return Response({"error": "Pending bill not found."}, status=status.HTTP_404_NOT_FOUND)
