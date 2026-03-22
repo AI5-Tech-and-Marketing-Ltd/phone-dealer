@@ -1,5 +1,5 @@
 from django.utils import timezone
-from rest_framework import views, viewsets, permissions, status
+from rest_framework import views, viewsets, permissions, status, serializers
 from rest_framework.response import Response
 from accounts.models import CustomUser
 from accounts.serializers import UserSerializer
@@ -29,6 +29,23 @@ class UserManagementViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsSuperUser]
+
+    def perform_create(self, serializer):
+        # Even SuperUsers can't create another SuperUser unless they themselves are one 
+        # (permissions already check for IsSuperUser, but this is an extra logic check)
+        new_role = self.request.data.get('role')
+        if new_role == 'SuperUser' and not self.request.user.role == 'SuperUser':
+             # This block is technically unreachable due to IsSuperUser permission,
+             # but good for explicit logic if we change permissions later.
+             raise serializers.ValidationError({"error": "Only a SuperUser can create another SuperUser."})
+        serializer.save()
+
+    def perform_update(self, serializer):
+        old_role = self.get_object().role
+        new_role = self.request.data.get('role')
+        if new_role == 'SuperUser' and old_role != 'SuperUser' and not self.request.user.role == 'SuperUser':
+             raise serializers.ValidationError({"error": "Only a SuperUser can promote a user to SuperUser."})
+        serializer.save()
 
 class AdminStoreViewSet(viewsets.ModelViewSet):
     queryset = Store.objects.all()

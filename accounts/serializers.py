@@ -12,14 +12,33 @@ class SignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'role', 'password')
+        fields = ('email', 'full_name', 'password')
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
             email=validated_data['email'],
             password=validated_data['password'],
             full_name=validated_data.get('full_name', ''),
-            role=validated_data.get('role', 'StoreOwner')
+            role='StoreOwner' # Default for public signup
+        )
+        return user
+
+class AddStaffSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'full_name', 'password')
+    
+    def create(self, validated_data):
+        # View will handle setting the role to StoreKeeper 
+        # and checking owner permissions
+        user = CustomUser.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            full_name=validated_data.get('full_name', ''),
+            role='StoreKeeper',
+            is_active=True # Staff added by owner can be active immediately or wait for email
         )
         return user
 

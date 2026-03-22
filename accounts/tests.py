@@ -60,3 +60,28 @@ class AccountsTests(APITestCase):
         # In a real test we'd extract UID and Token from the email
         # Simulating confirming with dummy token logic for brevity
         # Normally you'd parse mail.outbox[0].body
+    def test_add_staff_by_owner(self):
+        owner = User.objects.create_user(email='owner@test.com', password='password', role='StoreOwner', is_active=True)
+        refresh = RefreshToken.for_user(owner)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        
+        url = reverse('add-staff-admin')
+        data = {
+            'email': 'staff@test.com',
+            'password': 'password123',
+            'full_name': 'Staff User'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        
+        staff = User.objects.get(email='staff@test.com')
+        self.assertEqual(staff.role, 'StoreKeeper')
+
+    def test_add_staff_by_non_owner_fails(self):
+        user = User.objects.create_user(email='user@test.com', password='password', role='StoreKeeper', is_active=True)
+        refresh = RefreshToken.for_user(user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        
+        url = reverse('add-staff-admin')
+        response = self.client.post(url, {}) # Data doesn't matter, should 403
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)

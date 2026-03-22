@@ -151,3 +151,26 @@ class DeleteAccountView(views.APIView):
             return Response({'error': 'Wrong password.'}, status=status.HTTP_400_BAD_REQUEST)
         user.delete()
         return Response({'message': 'Account deleted.'}, status=status.HTTP_204_NO_CONTENT)
+class AddStoreKeeperView(views.APIView):
+    """Store owners adding staff."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from .permissions import IsStoreOwner
+        if not IsStoreOwner().has_permission(request, self):
+             return Response({"error": "Only store owners can add staff."}, status=status.HTTP_403_FORBIDDEN)
+             
+        from .serializers import AddStaffSerializer
+        serializer = AddStaffSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        # Staff is active immediately if added by owner, or could require activation
+        # For now, let's assume active but set verified to False if we wanted email
+        user.is_active = True 
+        user.save()
+        
+        return Response({
+            "message": "Store keeper added successfully.",
+            "user": UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
