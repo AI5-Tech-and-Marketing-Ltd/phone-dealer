@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Store, Subscription, Bill
+from .models import Store, Subscription, Bill, Plan
+
+class PlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Plan
+        fields = '__all__'
 
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,6 +17,7 @@ class StoreSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class SubscriptionSerializer(serializers.ModelSerializer):
+    plan_details = PlanSerializer(source='plan', read_only=True)
     class Meta:
         model = Subscription
         fields = '__all__'
@@ -25,7 +31,8 @@ class BillSerializer(serializers.ModelSerializer):
 
 class CreateSubscriptionBillSerializer(serializers.Serializer):
     store_id = serializers.IntegerField()
-    plan_type = serializers.ChoiceField(choices=Subscription.PLAN_CHOICES)
+    plan_id = serializers.IntegerField()
+    staff_count = serializers.IntegerField(min_value=1, default=2)
 
 class AddStaffSerializer(serializers.Serializer):
     store_id = serializers.IntegerField()

@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from .models import Product, Allocation, Condition
 
+class ConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Condition
+        fields = '__all__'
+
 class ProductSerializer(serializers.ModelSerializer):
     condition_list = serializers.CharField(write_only=True, required=False, help_text="Comma separated conditions")
     conditions = serializers.StringRelatedField(many=True, read_only=True)
@@ -21,7 +26,7 @@ class ProductSerializer(serializers.ModelSerializer):
         product = super().create(validated_data)
         if condition_str:
             for name in [c.strip() for c in condition_str.split(',') if c.strip()]:
-                condition, _ = Condition.objects.get_or_create(name=name)
+                condition, _ = Condition.objects.get_or_create(name=name, store=product.store)
                 product.conditions.add(condition)
         return product
     
@@ -31,7 +36,7 @@ class ProductSerializer(serializers.ModelSerializer):
         if condition_str is not None:
             product.conditions.clear()
             for name in [c.strip() for c in condition_str.split(',') if c.strip()]:
-                condition, _ = Condition.objects.get_or_create(name=name)
+                condition, _ = Condition.objects.get_or_create(name=name, store=product.store)
                 product.conditions.add(condition)
         return product
 

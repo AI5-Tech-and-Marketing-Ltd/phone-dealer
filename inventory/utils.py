@@ -1,4 +1,6 @@
-import requests
+import csv
+import os
+from django.conf import settings
 
 def validate_imei(imei: str) -> bool:
     """Luhn checksum validation for 15-digit IMEI."""
@@ -20,13 +22,55 @@ def validate_imei(imei: str) -> bool:
 
 def fetch_imei_info(imei: str):
     """
-    Placeholder for 3rd-party IMEI API integration.
-    You can use services like imei.info or similar.
+    Fetch device details from tacdb.csv based on the TAC (first 8 digits).
     """
-    # Placeholder implementation
+    tac = imei[:8]
+    file_path = os.path.join(settings.BASE_DIR, 'tacdb.csv')
+    
+    if not os.path.exists(file_path):
+         return {
+             "imei": imei,
+             "valid": validate_imei(imei),
+             "error": "TAC database not found."
+         }
+
+    try:
+        with open(file_path, mode='r', encoding='utf-8') as csvfile:
+            # Skip the first comment line
+            # Osmocom TAC database under CC-BY-SA v3.0 (c) Harald Welte 2016
+            next(csvfile)
+            
+            reader = csv.reader(csvfile)
+            header = next(reader) # tac,name,name,contributor,comment,gsmarena,gsmarena,aka
+            
+            for row in reader:
+                if len(row) > 0 and row[0] == tac:
+                    # Found the record
+                    # Index 1: name (brand), Index 2: name (device), Index 7: aka
+                    brand = row[1] if len(row) > 1 else "Unknown"
+                    model = row[2] if len(row) > 2 else "Unknown"
+                    aka_raw = row[7] if len(row) > 7 else ""
+                    aka_list = [a.strip() for a in aka_raw.split(',')] if aka_raw else []
+
+                    return {
+                        "imei": imei,
+                        "tac": tac,
+                        "brand": brand,
+                        "name": model,
+                        "aka": aka_list,
+                        "valid": validate_imei(imei)
+                    }
+    except Exception as e:
+        return {
+            "imei": imei,
+            "valid": validate_imei(imei),
+            "error": str(e)
+        }
+
     return {
         "imei": imei,
+        "tac": tac,
         "valid": validate_imei(imei),
-        "brand_guess": "Unknown",
-        "model_guess": "Unknown",
+        "found": False,
+        "message": "TAC not found in database."
     }

@@ -35,7 +35,7 @@ class SignupView(generics.CreateAPIView):
         user.activation_token_created = timezone.now()
         user.save()
 
-        # Send activation email (console)
+        # Send activation email
         activation_url = f"{settings.FRONTEND_URL}/activate?token={token}"
         send_mail(
             'Activate your account',
@@ -52,7 +52,6 @@ class SignupView(generics.CreateAPIView):
 
 @extend_schema(tags=['Auth'])
 class AccountActivateView(views.APIView):
-
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -61,7 +60,6 @@ class AccountActivateView(views.APIView):
         token = serializer.validated_data['token']
         try:
             user = CustomUser.objects.get(activation_token=token)
-            # Check if expired (e.g., 24 hours) - optional logic here
             user.is_active = True
             user.is_email_verified = True
             user.activation_token = None
@@ -70,9 +68,39 @@ class AccountActivateView(views.APIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'Invalid activation token.'}, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(tags=['Auth'], request=PasswordResetRequestSerializer)
+class ResendActivationView(views.APIView):
+    """Resend activation email if the user is not active yet."""
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        try:
+            user = CustomUser.objects.get(email=email)
+            if user.is_active and user.is_email_verified:
+                 return Response({'message': 'Account is already active.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            token = str(uuid.uuid4())
+            user.activation_token = token
+            user.activation_token_created = timezone.now()
+            user.save()
+
+            activation_url = f"{settings.FRONTEND_URL}/activate?token={token}"
+            send_mail(
+                'Activate your account',
+                f'Please click the link to activate: {activation_url}',
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            return Response({'message': 'Activation email resent.'})
+        except CustomUser.DoesNotExist:
+             return Response({'message': 'If an account exists with this email, an activation link has been sent.'})
+
 @extend_schema(tags=['Auth'])
 class PasswordResetRequestView(views.APIView):
-
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -93,13 +121,12 @@ class PasswordResetRequestView(views.APIView):
                 fail_silently=False,
             )
         except CustomUser.DoesNotExist:
-            pass # Silently fail for security
+            pass 
         
         return Response({'message': 'If an account exists with this email, a reset link has been sent.'})
 
 @extend_schema(tags=['Auth'])
 class PasswordResetConfirmView(views.APIView):
-
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -119,7 +146,6 @@ class PasswordResetConfirmView(views.APIView):
 
 @extend_schema(tags=['Auth'], request=LogoutSerializer)
 class LogoutView(views.APIView):
-
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -133,7 +159,6 @@ class LogoutView(views.APIView):
 
 @extend_schema(tags=['Profile'])
 class ProfileView(generics.RetrieveUpdateAPIView):
-
     serializer_class = ProfileSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -142,7 +167,6 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 @extend_schema(tags=['Profile'])
 class ChangePasswordView(views.APIView):
-
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -157,7 +181,6 @@ class ChangePasswordView(views.APIView):
 
 @extend_schema(tags=['Profile'])
 class DeleteAccountView(views.APIView):
-
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -168,4 +191,3 @@ class DeleteAccountView(views.APIView):
             return Response({'error': 'Wrong password.'}, status=status.HTTP_400_BAD_REQUEST)
         user.delete()
         return Response({'message': 'Account deleted.'}, status=status.HTTP_204_NO_CONTENT)
-

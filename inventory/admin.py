@@ -14,4 +14,4 @@ class AllocationAdmin(admin.ModelAdmin):
 
 @admin.register(Condition)
 class ConditionAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description']
+    list_display = ['name', 'store', 'description']

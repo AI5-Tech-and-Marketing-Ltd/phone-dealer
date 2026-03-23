@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Store, Subscription, Bill
+from .models import Store, Subscription, Bill, Plan
+
+@admin.register(Plan)
+class PlanAdmin(admin.ModelAdmin):
+    list_display = ['title', 'price_per_user', 'billing_cycle', 'is_active']
+    list_filter = ['billing_cycle', 'is_active']
 
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
@@ -9,8 +14,8 @@ class StoreAdmin(admin.ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'store', 'plan_type', 'expiry_date', 'payment_status']
-    list_filter = ['plan_type', 'payment_status']
+    list_display = ['id', 'store', 'plan', 'expiry_date', 'payment_status']
+    list_filter = ['plan', 'payment_status']
 
 @admin.register(Bill)
 class BillAdmin(admin.ModelAdmin):

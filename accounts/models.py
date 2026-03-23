@@ -43,6 +43,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='StoreOwner')
     profile_picture = CloudinaryField('image', null=True, blank=True)
     
+    # Linked store for staff (Many-to-One)
+    store = models.ForeignKey('stores.Store', on_delete=models.SET_NULL, null=True, blank=True, related_name='staff')
+
     is_active = models.BooleanField(default=True)
     is_email_verified = models.BooleanField(default=False)
     activation_token = models.CharField(max_length=255, blank=True, null=True)

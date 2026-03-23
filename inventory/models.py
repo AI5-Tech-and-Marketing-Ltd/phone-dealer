@@ -3,8 +3,12 @@ from django.conf import settings
 from cloudinary.models import CloudinaryField
 
 class Condition(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
+    store = models.ForeignKey('stores.Store', on_delete=models.CASCADE, related_name='conditions')
+
+    class Meta:
+        unique_together = ('name', 'store')
 
     def __str__(self):
         return self.name
