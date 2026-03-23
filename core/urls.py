@@ -18,9 +18,6 @@ urlpatterns = [
     # Marketplace
     path('api/marketplace/', include('inventory.urls_marketplace')),
     
-    # Sales
-    path('api/sales/', include('sales.urls')),
-    
     # SuperAdmin
     path('api/admin-portal/', include('admin_portal.urls')),
 

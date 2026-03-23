@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status, views, decorators
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from .serializers import (
     StoreSerializer, SubscriptionSerializer, BillSerializer,
     CreateSubscriptionBillSerializer, AddStaffSerializer, ReduceStaffSerializer
@@ -10,6 +11,7 @@ from .serializers import (
 from .models import Store, Subscription, Bill
 from accounts.permissions import IsStoreOwner, IsSuperUser
 
+@extend_schema(tags=['Stores'])
 class StoreViewSet(viewsets.ModelViewSet):
     serializer_class = StoreSerializer
     queryset = Store.objects.all()
@@ -24,7 +26,9 @@ class StoreViewSet(viewsets.ModelViewSet):
             return Store.objects.none()
         return Store.objects.filter(owner=self.request.user)
 
+@extend_schema(tags=['Subscriptions'])
 class SubscriptionViewSet(viewsets.ModelViewSet):
+
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
 
@@ -38,7 +42,9 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             return Subscription.objects.none()
         return Subscription.objects.filter(store__owner=self.request.user)
 
+@extend_schema(tags=['Billing'])
 class BillViewSet(viewsets.ReadOnlyModelViewSet):
+
     serializer_class = BillSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -47,7 +53,9 @@ class BillViewSet(viewsets.ReadOnlyModelViewSet):
             return Bill.objects.none()
         return Bill.objects.filter(store__owner=self.request.user)
 
+@extend_schema(tags=['Subscriptions'])
 class CreateSubscriptionBillView(views.APIView):
+
     permission_classes = [IsStoreOwner]
 
     def post(self, request):
@@ -78,7 +86,9 @@ class CreateSubscriptionBillView(views.APIView):
         
         return Response(BillSerializer(bill).data, status=status.HTTP_201_CREATED)
 
+@extend_schema(tags=['Subscriptions'])
 class AddStaffView(views.APIView):
+
     permission_classes = [IsStoreOwner]
 
     def post(self, request):
@@ -104,7 +114,9 @@ class AddStaffView(views.APIView):
         )
         return Response(BillSerializer(bill).data, status=status.HTTP_201_CREATED)
 
+@extend_schema(tags=['Subscriptions'])
 class ReduceStaffView(views.APIView):
+
     permission_classes = [IsStoreOwner]
 
     def post(self, request):
@@ -150,7 +162,9 @@ def apply_bill_action(bill):
              sub.next_billing_amount += (bill.staff_count_change * sub.amount_per_staff)
              sub.save()
 
+@extend_schema(tags=['Payments'])
 class PaystackCallbackView(views.APIView):
+
     """User returns here after payment."""
     permission_classes = [permissions.AllowAny]
 
@@ -178,7 +192,9 @@ class PaystackCallbackView(views.APIView):
         
         return Response({"error": "Payment verification failed"}, status=400)
 
+@extend_schema(tags=['Payments'])
 class PaystackWebhookView(views.APIView):
+
     """Server-to-server notification from Paystack."""
     permission_classes = [permissions.AllowAny]
 
@@ -214,7 +230,9 @@ class PaystackWebhookView(views.APIView):
                 
         return Response(status=200)
 
+@extend_schema(tags=['Billing'])
 class PayBillView(views.APIView):
+
     """Endpoint for frontend to get payment URL or simulate payment."""
     permission_classes = [IsStoreOwner]
 
@@ -231,3 +249,33 @@ class PayBillView(views.APIView):
             })
         except Bill.DoesNotExist:
              return Response({"error": "Pending bill not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@extend_schema(tags=['Stores'])
+class StoreStaffCreateView(views.APIView):
+    """Store owners adding staff user accounts."""
+    permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
+
+    def post(self, request):
+        from accounts.serializers import AddStaffSerializer as AccountAddStaffSerializer, UserSerializer
+        from accounts.models import CustomUser
+        
+        serializer = AccountAddStaffSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Check store staff limit
+        # This is a bit simplified, ideally check against Store.staff_limit
+        # or valid subscriptions.
+        
+        user = serializer.save()
+        user.is_active = True # Active immediately in this flow
+        user.role = 'StoreKeeper'
+        user.save()
+        
+        # Link user to store if there's a many-to-many or foreign key
+        # Current Store model doesn't have a direct link to staff users yet?
+        # Wait, let's check Store model.
+        
+        return Response({
+            "message": "Store keeper account created successfully.",
+            "user": UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)

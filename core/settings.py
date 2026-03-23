@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'accounts',
     'stores',
     'inventory',
-    'sales',
     'admin_portal',
     'rest_framework_simplejwt.token_blacklist',
 ]
@@ -186,11 +185,20 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'email',
 }
 
-# Email Backend for Development (Console)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@mobilesaas.com'
+# Email Configuration
+ZEPTOMAIL_API_KEY = os.getenv('ZEPTOMAIL_API_KEY')
+ZEPTOMAIL_SENDER_EMAIL = os.getenv('ZEPTOMAIL_SENDER_EMAIL', 'noreply@mobilesaas.com')
+ZEPTOMAIL_SENDER_NAME = os.getenv('ZEPTOMAIL_SENDER_NAME', 'Mobile Dealer SaaS')
+
+if ZEPTOMAIL_API_KEY and ZEPTOMAIL_API_KEY != "your_zeptomail_api_key_here":
+    EMAIL_BACKEND = 'zeptomail.mail.ZeptoMailBackend'
+    DEFAULT_FROM_EMAIL = f"{ZEPTOMAIL_SENDER_NAME} <{ZEPTOMAIL_SENDER_EMAIL}>"
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'noreply@mobilesaas.com'
+
 PASSWORD_RESET_TIMEOUT = 3600  # 1 hour in seconds
-FRONTEND_URL = 'http://localhost:3000' # Placeholder for frontend link
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000') 
 
 # Spectacular Docs
 SPECTACULAR_SETTINGS = {

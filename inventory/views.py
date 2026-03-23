@@ -1,11 +1,13 @@
 from rest_framework import viewsets, permissions, status, decorators
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from django.db import transaction, models
 from .serializers import ProductSerializer, AllocationSerializer, BulkSoldSerializer
 from .models import Product, Allocation
 from .filters import ProductFilter
 from .utils import fetch_imei_info
-from django.db import transaction, models
 
+@extend_schema(tags=['Inventory'])
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
@@ -25,6 +27,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Product.objects.all()
         return Product.objects.filter(store__owner=self.request.user)
 
+    @extend_schema(description="Lookup device information by IMEI")
     @decorators.action(detail=False, methods=['GET'], url_path='imei-lookup/(?P<imei>[0-9]+)')
     def imei_lookup(self, request, imei=None):
         info = fetch_imei_info(imei)
@@ -35,6 +38,7 @@ class ProductViewSet(viewsets.ModelViewSet):
              info['product'] = None
         return Response(info)
 
+    @extend_schema(request=BulkSoldSerializer)
     @decorators.action(detail=False, methods=['POST'], url_path='bulk-sold')
     @transaction.atomic
     def bulk_sold(self, request):
@@ -50,6 +54,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         return Response({"message": f"Successfully updated {updated_count} products."}, status=status.HTTP_200_OK)
 
+@extend_schema(tags=['Inventory'])
 class AllocationViewSet(viewsets.ModelViewSet):
     serializer_class = AllocationSerializer
     queryset = Allocation.objects.all()

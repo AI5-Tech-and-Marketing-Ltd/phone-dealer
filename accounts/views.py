@@ -8,13 +8,16 @@ from django.utils.encoding import force_bytes, force_str
 from rest_framework import status, views, generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, BlacklistedToken, OutstandingToken
+from drf_spectacular.utils import extend_schema
 from .serializers import (
     SignupSerializer, ProfileSerializer, UserSerializer,
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
-    AccountActivationSerializer, ChangePasswordSerializer, DeleteAccountSerializer
+    AccountActivationSerializer, ChangePasswordSerializer, DeleteAccountSerializer,
+    LogoutSerializer
 )
 from .models import CustomUser
 
+@extend_schema(tags=['Auth'])
 class SignupView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = SignupSerializer
@@ -26,7 +29,7 @@ class SignupView(generics.CreateAPIView):
         user = serializer.save()
         
         # Setup activation
-        user.is_active = False # Set to False until activated
+        user.is_active = not settings.PRODUCTION # Set to False until activated in production
         token = str(uuid.uuid4())
         user.activation_token = token
         user.activation_token_created = timezone.now()
@@ -47,7 +50,9 @@ class SignupView(generics.CreateAPIView):
             'user': UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
 
+@extend_schema(tags=['Auth'])
 class AccountActivateView(views.APIView):
+
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -65,7 +70,9 @@ class AccountActivateView(views.APIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'Invalid activation token.'}, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(tags=['Auth'])
 class PasswordResetRequestView(views.APIView):
+
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -90,7 +97,9 @@ class PasswordResetRequestView(views.APIView):
         
         return Response({'message': 'If an account exists with this email, a reset link has been sent.'})
 
+@extend_schema(tags=['Auth'])
 class PasswordResetConfirmView(views.APIView):
+
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -108,7 +117,9 @@ class PasswordResetConfirmView(views.APIView):
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return Response({'error': 'Invalid link.'}, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(tags=['Auth'], request=LogoutSerializer)
 class LogoutView(views.APIView):
+
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -120,14 +131,18 @@ class LogoutView(views.APIView):
         except Exception:
             return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema(tags=['Profile'])
 class ProfileView(generics.RetrieveUpdateAPIView):
+
     serializer_class = ProfileSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
         return self.request.user
 
+@extend_schema(tags=['Profile'])
 class ChangePasswordView(views.APIView):
+
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -140,7 +155,9 @@ class ChangePasswordView(views.APIView):
         user.save()
         return Response({'message': 'Password changed.'})
 
+@extend_schema(tags=['Profile'])
 class DeleteAccountView(views.APIView):
+
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -151,26 +168,4 @@ class DeleteAccountView(views.APIView):
             return Response({'error': 'Wrong password.'}, status=status.HTTP_400_BAD_REQUEST)
         user.delete()
         return Response({'message': 'Account deleted.'}, status=status.HTTP_204_NO_CONTENT)
-class AddStoreKeeperView(views.APIView):
-    """Store owners adding staff."""
-    permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        from .permissions import IsStoreOwner
-        if not IsStoreOwner().has_permission(request, self):
-             return Response({"error": "Only store owners can add staff."}, status=status.HTTP_403_FORBIDDEN)
-             
-        from .serializers import AddStaffSerializer
-        serializer = AddStaffSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        
-        # Staff is active immediately if added by owner, or could require activation
-        # For now, let's assume active but set verified to False if we wanted email
-        user.is_active = True 
-        user.save()
-        
-        return Response({
-            "message": "Store keeper added successfully.",
-            "user": UserSerializer(user).data
-        }, status=status.HTTP_201_CREATED)

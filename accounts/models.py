@@ -7,6 +7,13 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
+        
+        # Set is_active based on PRODUCTION setting if not production
+        from django.conf import settings
+        if not getattr(settings, 'PRODUCTION', False):
+            extra_fields.setdefault('is_active', True)
+            extra_fields.setdefault('is_email_verified', True)
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -48,6 +55,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name']
+
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
 
     def __str__(self):
         return self.email

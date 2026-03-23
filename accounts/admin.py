@@ -18,6 +18,7 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('email', 'full_name', 'role', 'password'),
         }),
     )
+    readonly_fields = ('date_joined',)
     search_fields = ('email', 'full_name')
     ordering = ('email',)
 

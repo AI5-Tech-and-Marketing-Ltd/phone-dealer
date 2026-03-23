@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Allocation
+from .models import Product, Allocation, Condition
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -11,3 +11,7 @@ class ProductAdmin(admin.ModelAdmin):
 class AllocationAdmin(admin.ModelAdmin):
     list_display = ['product', 'allocated_from', 'allocated_to', 'timestamp']
     list_filter = ['timestamp']
+
+@admin.register(Condition)
+class ConditionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description']
