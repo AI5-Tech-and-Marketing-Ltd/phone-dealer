@@ -10,7 +10,7 @@ from .serializers import (
 )
 from .models import Store, Subscription, Bill, Plan
 from accounts.models import CustomUser
-from accounts.serializers import UserSerializer
+from accounts.serializers import UserSerializer, AddStaffSerializer as AccountAddStaffSerializer
 from accounts.permissions import IsStoreOwner, IsSuperUser
 
 @extend_schema(tags=['Plans'])
@@ -77,7 +77,7 @@ class BillViewSet(viewsets.ReadOnlyModelViewSet):
             return Bill.objects.none()
         return Bill.objects.filter(store__owner=self.request.user)
 
-@extend_schema(tags=['Subscriptions'])
+@extend_schema(tags=['Subscriptions'], request=CreateSubscriptionBillSerializer)
 class CreateSubscriptionBillView(views.APIView):
     permission_classes = [IsStoreOwner]
 
@@ -124,7 +124,7 @@ class CreateSubscriptionBillView(views.APIView):
             "subscription": SubscriptionSerializer(sub).data
         }, status=status.HTTP_201_CREATED)
 
-@extend_schema(tags=['Subscriptions'])
+@extend_schema(tags=['Subscriptions'], request=AddStaffSerializer)
 class AddStaffView(views.APIView):
     permission_classes = [IsStoreOwner]
 
@@ -159,7 +159,7 @@ class AddStaffView(views.APIView):
         )
         return Response(BillSerializer(bill).data, status=status.HTTP_201_CREATED)
 
-@extend_schema(tags=['Subscriptions'])
+@extend_schema(tags=['Subscriptions'], request=ReduceStaffSerializer)
 class ReduceStaffView(views.APIView):
     permission_classes = [IsStoreOwner]
 
@@ -280,14 +280,12 @@ class PayBillView(views.APIView):
         except Bill.DoesNotExist:
              return Response({"error": "Pending bill not found."}, status=status.HTTP_404_NOT_FOUND)
 
-@extend_schema(tags=['Stores'])
+@extend_schema(tags=['Stores'], request=AccountAddStaffSerializer)
 class StoreStaffCreateView(views.APIView):
     """Store owners adding staff user accounts."""
     permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
 
     def post(self, request):
-        from accounts.serializers import AddStaffSerializer as AccountAddStaffSerializer, UserSerializer
-        
         serializer = AccountAddStaffSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         

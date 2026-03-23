@@ -50,7 +50,7 @@ class SignupView(generics.CreateAPIView):
             'user': UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
 
-@extend_schema(tags=['Auth'])
+@extend_schema(tags=['Auth'], request=AccountActivationSerializer)
 class AccountActivateView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -99,7 +99,7 @@ class ResendActivationView(views.APIView):
         except CustomUser.DoesNotExist:
              return Response({'message': 'If an account exists with this email, an activation link has been sent.'})
 
-@extend_schema(tags=['Auth'])
+@extend_schema(tags=['Auth'], request=PasswordResetRequestSerializer)
 class PasswordResetRequestView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -125,7 +125,7 @@ class PasswordResetRequestView(views.APIView):
         
         return Response({'message': 'If an account exists with this email, a reset link has been sent.'})
 
-@extend_schema(tags=['Auth'])
+@extend_schema(tags=['Auth'], request=PasswordResetConfirmSerializer)
 class PasswordResetConfirmView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -165,7 +165,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
-@extend_schema(tags=['Profile'])
+@extend_schema(tags=['Profile'], request=ChangePasswordSerializer)
 class ChangePasswordView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -179,7 +179,7 @@ class ChangePasswordView(views.APIView):
         user.save()
         return Response({'message': 'Password changed.'})
 
-@extend_schema(tags=['Profile'])
+@extend_schema(tags=['Profile'], request=DeleteAccountSerializer)
 class DeleteAccountView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
