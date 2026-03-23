@@ -6,7 +6,15 @@ class PlanSerializer(serializers.ModelSerializer):
         model = Plan
         fields = '__all__'
 
+class SubscriptionSerializer(serializers.ModelSerializer):
+    plan_details = PlanSerializer(source='plan', read_only=True)
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+        read_only_fields = ('start_date', 'payment_status')
+
 class StoreSerializer(serializers.ModelSerializer):
+    subscription = SubscriptionSerializer(read_only=True)
     class Meta:
         model = Store
         fields = '__all__'
@@ -15,13 +23,6 @@ class StoreSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
         return super().create(validated_data)
-
-class SubscriptionSerializer(serializers.ModelSerializer):
-    plan_details = PlanSerializer(source='plan', read_only=True)
-    class Meta:
-        model = Subscription
-        fields = '__all__'
-        read_only_fields = ('start_date', 'payment_status')
 
 class BillSerializer(serializers.ModelSerializer):
     class Meta:

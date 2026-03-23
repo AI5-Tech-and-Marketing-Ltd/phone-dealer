@@ -25,7 +25,7 @@ class Store(models.Model):
     subscription_plan = models.CharField(max_length=50, default='Free')
     staff_limit = models.PositiveIntegerField(default=2)
     logo = CloudinaryField('image', null=True, blank=True)
-    cover_image = CloudinaryField('image', null=True, blank=True)
+    cover_picture = CloudinaryField('image', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -34,7 +34,7 @@ class Store(models.Model):
         return f"{self.name} ({self.owner.email})"
 
 class Subscription(models.Model):
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='subscriptions')
+    store = models.OneToOneField(Store, on_delete=models.CASCADE, related_name='subscription')
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, null=True, blank=True, related_name='active_subscriptions')
     plan_type_legacy = models.CharField(max_length=20, default='Free') # For backward compat
     start_date = models.DateField(auto_now_add=True)

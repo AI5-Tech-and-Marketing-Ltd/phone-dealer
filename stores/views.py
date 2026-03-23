@@ -94,17 +94,18 @@ class CreateSubscriptionBillView(views.APIView):
         staff_count = serializer.validated_data['staff_count']
         total_amount = plan.price_per_user * staff_count
         
-        # Create pending subscription
-        # Expire in 30 days if new
+        # Ensure only one subscription per store (update if exists)
         exp_date = timezone.now().date() + timezone.timedelta(days=plan.renewal_period_days)
         
-        sub = Subscription.objects.create(
+        sub, created = Subscription.objects.update_or_create(
             store=store,
-            plan=plan,
-            max_staff=staff_count,
-            expiry_date=exp_date,
-            payment_status='Pending',
-            next_billing_amount=total_amount
+            defaults={
+                'plan': plan,
+                'max_staff': staff_count,
+                'expiry_date': exp_date,
+                'payment_status': 'Pending',
+                'next_billing_amount': total_amount
+            }
         )
         
         bill = Bill.objects.create(
@@ -131,10 +132,13 @@ class AddStaffView(views.APIView):
         serializer = AddStaffSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         store = Store.objects.get(id=serializer.validated_data['store_id'], owner=request.user)
-        sub = store.subscriptions.filter(payment_status='Paid').first()
         
-        if not sub:
-             return Response({"error": "No active subscription found."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            sub = store.subscription
+            if sub.payment_status != 'Paid':
+                 return Response({"error": "No active/paid subscription found."}, status=status.HTTP_400_BAD_REQUEST)
+        except Subscription.DoesNotExist:
+             return Response({"error": "No subscription found."}, status=status.HTTP_400_BAD_REQUEST)
         
         plan = sub.plan
         if not plan:
@@ -163,10 +167,13 @@ class ReduceStaffView(views.APIView):
         serializer = ReduceStaffSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         store = Store.objects.get(id=serializer.validated_data['store_id'], owner=request.user)
-        sub = store.subscriptions.filter(payment_status='Paid').first()
         
-        if not sub:
-             return Response({"error": "No active subscription found."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            sub = store.subscription
+            if sub.payment_status != 'Paid':
+                 return Response({"error": "No active/paid subscription found."}, status=status.HTTP_400_BAD_REQUEST)
+        except Subscription.DoesNotExist:
+             return Response({"error": "No subscription found."}, status=status.HTTP_400_BAD_REQUEST)
         
         plan = sub.plan
         if not plan:
@@ -287,6 +294,25 @@ class StoreStaffCreateView(views.APIView):
         store = Store.objects.filter(owner=request.user).first()
         if not store:
             return Response({"error": "You must own a store to add staff."}, status=400)
+            
+        # Check Staff Limit based on Subscription
+        from accounts.models import CustomUser as AccountUser
+        try:
+            sub = store.subscription
+            if sub.payment_status != 'Paid' and sub.plan_type_legacy == 'Free':
+                 # If free, default to 2
+                 limit = 2
+            else:
+                 limit = sub.max_staff
+        except Exception:
+            limit = 2 # Default fallback
+
+        current_staff_count = AccountUser.objects.filter(store=store).count()
+        if current_staff_count >= limit:
+             return Response({
+                 "error": f"Staff limit reached ({limit} slots).",
+                 "details": "Upgrade your plan or purchase more slots."
+             }, status=status.HTTP_400_BAD_REQUEST)
             
         user = serializer.save()
         user.is_active = True
