@@ -5,8 +5,8 @@ from drf_spectacular.utils import extend_schema
 from accounts.models import CustomUser
 from accounts.serializers import UserSerializer
 from accounts.permissions import IsSuperUser
-from stores.models import Store, Subscription, Bill
-from stores.serializers import StoreSerializer, SubscriptionSerializer, BillSerializer
+from stores.models import Store, Subscription, Bill, Plan
+from stores.serializers import StoreSerializer, SubscriptionSerializer, BillSerializer, PlanSerializer
 from inventory.models import Product, Allocation
 from inventory.serializers import ProductSerializer, AllocationSerializer
 from .serializers import AssignStoreSerializer, ChangeOwnerSerializer, AdminUserCreateSerializer
@@ -95,6 +95,13 @@ class AdminStoreViewSet(viewsets.ModelViewSet):
         store = self.get_object()
         staff = CustomUser.objects.filter(store=store)
         return Response(UserSerializer(staff, many=True).data)
+
+@extend_schema(tags=['Admin Portal - Plans'])
+class AdminPlanViewSet(viewsets.ModelViewSet):
+    """Full CRUD for subscription plans (SuperAdmin only)."""
+    queryset = Plan.objects.all()
+    serializer_class = PlanSerializer
+    permission_classes = [IsSuperUser]
 
 @extend_schema(tags=['Admin Portal - Subscriptions'])
 class AdminSubscriptionViewSet(viewsets.ModelViewSet):

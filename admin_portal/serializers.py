@@ -13,7 +13,7 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'password', 'role', 'store', 'is_active')
+        fields = ('email', 'full_name', 'phone_number', 'password', 'role', 'store', 'is_active')
 
     def create(self, validated_data):
         password = validated_data.pop('password')

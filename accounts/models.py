@@ -40,6 +40,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(unique=True, primary_key=True)
     full_name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='StoreOwner')
     profile_picture = CloudinaryField('image', null=True, blank=True)
     

@@ -4,7 +4,7 @@ from .models import CustomUser
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'role', 'profile_picture', 'date_joined', 'is_active')
+        fields = ('email', 'full_name', 'phone_number', 'role', 'profile_picture', 'date_joined', 'is_active')
         read_only_fields = ('date_joined', 'is_active')
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -12,14 +12,15 @@ class SignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'password')
+        fields = ('email', 'full_name', 'phone_number', 'password')
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(
             email=validated_data['email'],
             password=validated_data['password'],
             full_name=validated_data.get('full_name', ''),
-            role='StoreOwner' # Default for public signup
+            phone_number=validated_data.get('phone_number', ''),
+            role='StoreOwner'
         )
         return user
 
@@ -28,24 +29,23 @@ class AddStaffSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'password')
+        fields = ('email', 'full_name', 'phone_number', 'password')
     
     def create(self, validated_data):
-        # View will handle setting the role to StoreKeeper 
-        # and checking owner permissions
         user = CustomUser.objects.create_user(
             email=validated_data['email'],
             password=validated_data['password'],
             full_name=validated_data.get('full_name', ''),
+            phone_number=validated_data.get('phone_number', ''),
             role='StoreKeeper',
-            is_active=True # Staff added by owner can be active immediately or wait for email
+            is_active=True
         )
         return user
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'profile_picture', 'role', 'is_email_verified')
+        fields = ('email', 'full_name', 'phone_number', 'profile_picture', 'role', 'is_email_verified')
         read_only_fields = ('email', 'role', 'is_email_verified')
 
 class PasswordResetRequestSerializer(serializers.Serializer):
