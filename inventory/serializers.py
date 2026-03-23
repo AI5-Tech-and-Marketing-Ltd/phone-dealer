@@ -40,6 +40,20 @@ class ProductSerializer(serializers.ModelSerializer):
                 product.conditions.add(condition)
         return product
 
+class MarketplaceProductSerializer(serializers.ModelSerializer):
+    """Public serializer for marketplace, excluding sensitive info like cost_price."""
+    conditions = serializers.StringRelatedField(many=True, read_only=True)
+    store_name = serializers.CharField(source='store.name', read_only=True)
+
+    class Meta:
+        model = Product
+        fields = (
+            'id', 'brand', 'model_name', 'selling_price', 'status', 
+            'availability', 'store', 'store_name', 'image', 'conditions', 
+            'created_at'
+        )
+        read_only_fields = ('availability',)
+
 class AllocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Allocation

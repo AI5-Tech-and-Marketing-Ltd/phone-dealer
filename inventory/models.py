@@ -19,6 +19,10 @@ class Product(models.Model):
         ('Allocated', 'Allocated'),
         ('Sold', 'Sold'),
     )
+    AVAILABILITY_CHOICES = (
+        ('Private', 'Private'),
+        ('Public', 'Public'),
+    )
 
     brand = models.CharField(max_length=100)
     model_name = models.CharField(max_length=100)
@@ -26,6 +30,8 @@ class Product(models.Model):
     cost_price = models.DecimalField(max_digits=12, decimal_places=2)
     selling_price = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Available')
+    availability = models.CharField(max_length=10, choices=AVAILABILITY_CHOICES, default='Private')
+    
     store = models.ForeignKey('stores.Store', on_delete=models.CASCADE, related_name='products')
     image = CloudinaryField('image', null=True, blank=True)
     conditions = models.ManyToManyField(Condition, blank=True, related_name='products')

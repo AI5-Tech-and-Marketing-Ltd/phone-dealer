@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.db import transaction, models
 from .serializers import (
-    ProductSerializer, AllocationSerializer, BulkSoldSerializer,
-    ConditionSerializer
+    ProductSerializer, MarketplaceProductSerializer, AllocationSerializer, 
+    BulkSoldSerializer, ConditionSerializer
 )
 from .models import Product, Allocation, Condition
 from .filters import ProductFilter
@@ -69,7 +69,7 @@ class TacListView(generics.GenericAPIView):
             return Response({
                 "page": page,
                 "page_size": page_size,
-                "total_records": 22529, # Hardcoded for speed or we can count it
+                "total_records": 22529, # Hardcoded for speed
                 "results": data
             })
         except Exception as e:
@@ -88,14 +88,18 @@ class ConditionViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
+        user = self.request.user
         if getattr(self, 'swagger_fake_view', False):
              return Condition.objects.none()
-        if self.request.user.role == 'SuperUser':
+        if user.role == 'SuperUser':
             return Condition.objects.all()
-        return Condition.objects.filter(store__owner=self.request.user)
+        return Condition.objects.filter(
+            models.Q(store__owner=user) | models.Q(store=getattr(user, 'store', None))
+        ).distinct()
 
 @extend_schema(tags=['Inventory'])
 class ProductViewSet(viewsets.ModelViewSet):
+    """Internal inventory management for store staff."""
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
     filterset_class = ProductFilter
@@ -107,11 +111,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
+        user = self.request.user
         if getattr(self, 'swagger_fake_view', False):
              return Product.objects.none()
-        if self.request.user.role == 'SuperUser':
+        if user.role == 'SuperUser':
             return Product.objects.all()
-        return Product.objects.filter(store__owner=self.request.user)
+        # Staff (Owner or Keeper) can see all their store's products (Private/Public)
+        return Product.objects.filter(
+            models.Q(store__owner=user) | models.Q(store=getattr(user, 'store', None))
+        ).distinct()
 
     @extend_schema(description="Lookup device information by IMEI")
     @decorators.action(detail=False, methods=['GET'], url_path='imei-lookup/(?P<imei>[0-9]+)')
@@ -140,6 +148,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         return Response({"message": f"Successfully updated {updated_count} products."}, status=status.HTTP_200_OK)
 
+@extend_schema(tags=['Marketplace'])
+class MarketplaceViewSet(viewsets.ReadOnlyModelViewSet):
+    """Public list of available products with Public visibility."""
+    permission_classes = [permissions.AllowAny]
+    serializer_class = MarketplaceProductSerializer
+    
+    def get_queryset(self):
+        return Product.objects.filter(
+            status='Available',
+            availability='Public'
+        ).select_related('store')
+
 @extend_schema(tags=['Inventory'])
 class AllocationViewSet(viewsets.ModelViewSet):
     serializer_class = AllocationSerializer
@@ -147,6 +167,9 @@ class AllocationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        user = self.request.user
         if getattr(self, 'swagger_fake_view', False):
              return Allocation.objects.none()
-        return Allocation.objects.filter(store__owner=self.request.user)
+        return Allocation.objects.filter(
+            models.Q(store__owner=user) | models.Q(store=getattr(user, 'store', None))
+        ).distinct()
