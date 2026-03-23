@@ -1,72 +1,93 @@
-# Mobile Dealer SaaS API — Documentation
+# 📱 Mobile Dealer SaaS API & Frontend Implementation Guide
 
-## 🏗️ Architectural Overview
+## 🏗️ System Architecture
+The platform is designed as a **Multi-tenant SaaS** for mobile phone dealers. It partitions data by **Store**, uses **RBAC** for permissions, and manages a global **TAC (Type Allocation Code)** database for device lookup and specifications.
 
-The **Mobile Dealer SaaS** platform uses a multi-layered approach to ensure scalability, security, and data partitioning for different tenants (Stores).
+---
 
-### 🔐 Authentication System
+## 🔐 Roles & Permissions
+- **SuperUser**: Global system access. Can manage all users, stores, billing, and view cross-tenant analytics.
+- **StoreOwner**: Primary tenant account. Has full control over their stores, inventory, subscriptions, and sub-accounts.
+- **StoreKeeper**: Staff/Employee account linked to a specific store. Can manage products and allocations within the store they are assigned to.
 
-- **Email-based Auth**: `CustomUser` model uses email as the primary login.
-- **JWT (JSON Web Token)**: State-free authentication via `djangorestframework-simplejwt`.
-- **User Roles**: 
-  - `SuperUser`: Global access to all stores, users, and system stats.
-  - `StoreOwner`: Ownership over their stores, products, and sales.
-  - `StoreKeeper`: Read-only/write-limited access as a sub-account of a store.
+---
 
-### 🏠 Multi-Tenancy
+## 📦 Core Modules & Endpoints
 
-- Every **Store** is owned by a `StoreOwner`.
-- **Products**, **Sales**, and **Allocations** are strictly filtered by the owner's store in the ViewSets.
-- Data integrity is enforced via **ForeignKey** relationships to the `Store` model.
+### 1. Authentication (`/api/auth/`)
+- `POST api/auth/signup/`: Public registration for new **StoreOwners**.
+- `POST api/auth/login/`: Returns JWT tokens (Access & Refresh tokens).
+- `POST api/auth/resend-activation/`: Resend account verification email.
+- `POST api/auth/password-reset/`: Initiate "Forgot Password" flow via email.
+- `POST api/auth/logout/`: Blacklists the refresh token.
 
-### 📱 Specialized IMEI Logic
+### 2. Store & Subscription Management (`/api/stores/`)
+- `GET api/stores/`: List and manage stores owned by the current user.
+- `GET api/stores/plans/`: List available subscription tiers (includes Title, Price per user, Features, and Billing Cycle).
+- `POST api/stores/subscribe/`: Initiate a new subscription. Requires `plan_id` and `staff_count`. Calculates total price dynamically (`plan.price * staff_count`).
+- `GET api/stores/staff/`: Full CRUD for users linked to the owner's store.
+- `GET api/stores/bills/`: View invoices, payment status, and Paystack references.
+- `POST api/stores/bills/{id}/pay/`: Returns a secure Paystack checkout URL for pending payments.
 
-- **Validation**: All IMEI strings must satisfy the **Luhn Checksum** (15 digits).
-- **Utility**: `inventory/utils.py` contains `validate_imei` and a placeholder for 3rd-party spec lookups.
-- **Product Status**: Tracking device lifecycle: `Available` → `Allocated` → `Sold`.
+### 3. Inventory & Device Intelligence (`/api/inventory/`)
+- `GET api/inventory/tac-list/`: Paginated explorer for the global TAC database (22,000+ records). Supports `page` and `page_size` (max 200).
+- `GET api/inventory/imei-lookup/{imei}/`: Advanced device lookup. Returns specs (Brand, Model, AKA names) from the TAC database and checks if the device exists in your store.
+- `POST api/inventory/conditions/`: Manage custom status labels per store (e.g., "Mint", "Fair", "Cracked Screen").
+- `POST api/inventory/bulk-sold/`: Bulk update product status to "Sold" using IDs or IMEI lists.
+- `GET api/inventory/allocations/`: Track internal hand-offs of devices between staff members.
 
-### 💵 Sales & Automatic Lifecycle
+### 4. Admin Portal (`/api/admin-portal/`) — **SUPERUSER ONLY**
+- `POST api/admin-portal/users/assign-store/`: Link any user to any store and set their role (Owner vs Keeper).
+- `POST api/admin-portal/stores/{id}/change-owner/`: Atomically transfer primary ownership of a store.
+- `GET api/admin-portal/dashboard-stats/`: System-wide KPI tracking (Total users, active stores, global inventory volume).
 
-- Creating a **Sale** triggers an atomic update on the associated product to `Sold`.
-- **Sales Report**: Exportable CSV functionality for owners to track revenue and performance.
+---
 
-### 📅 Subscription Enforcement
+## 🎨 Frontend Implementation Guide
 
-- **Decorator Logic**: `check_subscription` (in `stores/decorators.py`) can be applied to actions (like adding staff) to enforce plan-based limits.
-- **Plan Limits**: Staff allocations and store counts are managed via `Subscription` models attached to stores.
+### 🔑 Authentication Flow
+1.  **Security**: Store the `access` token in memory/state and the `refresh` token in a secure cookie or encrypted storage.
+2.  **Interceptor**: Attach `Authorization: Bearer <token>` to all private API calls. Automatically call `token/refresh` if a 401 error is received.
+3.  **Dynamic UI**: Use the `role` from the user profile to toggle visibility of administrative menus.
 
-### 🖼️ Cloudinary Storage
+### 🛒 Subscription Logic
+1.  **Tier Selection**: Fetch available plans from `api/stores/plans/`.
+2.  **Staff Selection**: Allow the user to pick the number of seats. Total price updates in real-time as `Plan.price_per_user * Staff_Count`.
+3.  **Payment Processing**: On subscription initiation, redirect the user to the provided `checkout_url`.
+4.  **Verification**: After payment, the user is redirected back. The backend verifies via **Paystack Webhooks** and **Callbacks**.
 
-- **Automated Media**: All `profile_picture`, `logo`, and `product.image` fields use `CloudinaryField`.
-- **Efficiency**: Images are stored externally, optimized for delivery over CDNs.
+### 📱 IMEI & Inventory UX
+1.  **Rapid Entry**: Implement a 1D barcode scanner using the camera.
+2.  **Intel Lookup**: Immediately call `api/inventory/imei-lookup/{imei}/`.
+3.  **Smart Fill**: Auto-populate the `Brand` and `Model` input fields using the API response. This prevents data entry errors.
+4.  **Conditions**: Fetch store-specific conditions from `api/inventory/conditions/` for the status dropdown.
 
-## 🛠️ Key Endpoints & Parameters
+### 🏘️ Multi-Tenancy Management
+1.  **Store Context**: For users with multiple stores, include a "Store Switcher" that updates the application context.
+2.  **Staff Invitation**: StoreOwners should use the `api/stores/staff/` endpoint to create accounts instead of a public signup link to ensure correct store linkage.
 
-### Inventory Filter Parameters
-Use the following query parameters at `/api/inventory/` and `/api/marketplace/`:
-- `brand`: Search brands (case-insensitive)
-- `model`: Search models (case-insensitive)
-- `status`: One of `Available`, `Allocated`, `Sold`
-- `min_price`: Minimum selling price
-- `max_price`: Maximum selling price
+---
 
-### Bulk Sold Endpoint
-`POST /api/inventory/bulk-sold/`
-**Body**:
-```json
-{
-  "ids": [1, 2, 3],
-  "imeis": ["3579..."]
-}
-```
+## 🔗 Model Relationships (ERD)
+- **User** (Many-to-One) → **Store**: Staff are children of a store.
+- **Store** (One-to-Many) → **Products**: Inventory belongs to a specific store.
+- **Store** (One-to-Many) → **Subscriptions**: Stores maintain a history of plans.
+- **Subscription** (Many-to-One) → **Plan**: Subscriptions derive pricing and features from a Plan record.
+- **Bill** (One-to-One) → **Subscription**: Bills link financial transactions to service access.
+- **Product** (Many-to-Many) → **Conditions**: Many products can share the same condition label defined by the store.
 
-### Marketplace (Public)
-`GET /api/marketplace/`
-Returns only **Available** products from **Active** stores. No authentication required.
+---
 
-## 🚢 Deployment Roadmap
+## 🛠️ Performance & Scalability Tips
+- **Infinite Scroll**: For the `TAC-List`, use infinite scrolling. Loading 200 rows at a time provides a smooth UX for 22k records.
+- **Cloudinary Optimization**: Use Cloudinary delivery URLs for images. Append transformation parameters (e.g., `q_auto,f_auto,w_500`) to significantly reduce page load time.
+- **Atomic Operations**: Always use the `bulk-sold` endpoint for large inventory updates to ensure database consistency.
 
-1. **Environment Variables**: Set `CLOUDINARY_*` and `SECRET_KEY`.
-2. **Database Migration**: Switch to **PostgreSQL** in `core/settings.py` for high concurrency.
-3. **CORS Policies**: Restrict `CORS_ALLOW_ALL_ORIGINS = True` to specific frontend domains.
-4. **Media CDN**: Ensure Cloudinary API responsiveness matches traffic targets.
+---
+
+## 🚀 Deployment Checklist
+- [ ] Set `DEBUG=False` and `PRODUCTION=True` in environment variables.
+- [ ] Configure `ZEPTOMAIL_API_KEY` for transactional email delivery.
+- [ ] Set `CLOUDINARY_URL` for secure media storage.
+- [ ] Map Paystack Webhook to `/api/stores/payments/webhook/`.
+- [ ] Configure `FRONTEND_URL` so reset links point to your client application.
