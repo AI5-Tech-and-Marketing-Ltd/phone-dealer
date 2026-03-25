@@ -6,6 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from rest_framework import status, views, generics, permissions
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, BlacklistedToken, OutstandingToken
 from drf_spectacular.utils import extend_schema
@@ -50,7 +51,11 @@ class SignupView(generics.CreateAPIView):
             'user': UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
 
-@extend_schema(tags=['Auth'], request=AccountActivationSerializer)
+@extend_schema(
+    tags=['Auth'], 
+    request=AccountActivationSerializer,
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+)
 class AccountActivateView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -68,7 +73,11 @@ class AccountActivateView(views.APIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'Invalid activation token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-@extend_schema(tags=['Auth'], request=PasswordResetRequestSerializer)
+@extend_schema(
+    tags=['Auth'], 
+    request=PasswordResetRequestSerializer,
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+)
 class ResendActivationView(views.APIView):
     """Resend activation email if the user is not active yet."""
     permission_classes = (permissions.AllowAny,)
@@ -99,7 +108,11 @@ class ResendActivationView(views.APIView):
         except CustomUser.DoesNotExist:
              return Response({'message': 'If an account exists with this email, an activation link has been sent.'})
 
-@extend_schema(tags=['Auth'], request=PasswordResetRequestSerializer)
+@extend_schema(
+    tags=['Auth'], 
+    request=PasswordResetRequestSerializer,
+    responses={200: OpenApiTypes.OBJECT}
+)
 class PasswordResetRequestView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -125,7 +138,11 @@ class PasswordResetRequestView(views.APIView):
         
         return Response({'message': 'If an account exists with this email, a reset link has been sent.'})
 
-@extend_schema(tags=['Auth'], request=PasswordResetConfirmSerializer)
+@extend_schema(
+    tags=['Auth'], 
+    request=PasswordResetConfirmSerializer,
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+)
 class PasswordResetConfirmView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -144,7 +161,11 @@ class PasswordResetConfirmView(views.APIView):
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return Response({'error': 'Invalid link.'}, status=status.HTTP_400_BAD_REQUEST)
 
-@extend_schema(tags=['Auth'], request=LogoutSerializer)
+@extend_schema(
+    tags=['Auth'], 
+    request=LogoutSerializer,
+    responses={205: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+)
 class LogoutView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -165,7 +186,11 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
-@extend_schema(tags=['Profile'], request=ChangePasswordSerializer)
+@extend_schema(
+    tags=['Profile'], 
+    request=ChangePasswordSerializer,
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+)
 class ChangePasswordView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -179,7 +204,11 @@ class ChangePasswordView(views.APIView):
         user.save()
         return Response({'message': 'Password changed.'})
 
-@extend_schema(tags=['Profile'], request=DeleteAccountSerializer)
+@extend_schema(
+    tags=['Profile'], 
+    request=DeleteAccountSerializer,
+    responses={204: None, 400: OpenApiTypes.OBJECT}
+)
 class DeleteAccountView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 

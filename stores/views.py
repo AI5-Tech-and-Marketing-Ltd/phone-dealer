@@ -3,25 +3,18 @@ from decimal import Decimal
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status, views, decorators
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
-from .serializers import (
-    StoreSerializer, SubscriptionSerializer, BillSerializer, PlanSerializer,
-    CreateSubscriptionBillSerializer, AddStaffSerializer, ReduceStaffSerializer
-)
-from .models import Store, Subscription, Bill, Plan
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from .models import Store
+from billing.models import Plan, Subscription, Bill
+from billing.serializers import BillSerializer, StoreAddStaffSerializer, ReduceStaffSerializer
 from accounts.models import CustomUser
 from accounts.serializers import UserSerializer, AddStaffSerializer as AccountAddStaffSerializer
 from accounts.permissions import IsStoreOwner, IsSuperUser
 
-@extend_schema(tags=['Plans'])
-class PlanViewSet(viewsets.ReadOnlyModelViewSet):
-    """Public list of available subscription plans."""
-    queryset = Plan.objects.filter(is_active=True)
-    serializer_class = PlanSerializer
-    permission_classes = [permissions.AllowAny]
-
 @extend_schema(tags=['Stores'])
 class StoreViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer # Placeholder for StoreSerializer if needed
+    from .serializers import StoreSerializer
     serializer_class = StoreSerializer
     queryset = Store.objects.all()
 
@@ -31,294 +24,119 @@ class StoreViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return Store.objects.none()
-        if self.request.user.role == 'SuperUser':
-            return Store.objects.all()
+        if getattr(self, 'swagger_fake_view', False): return Store.objects.none()
+        if self.request.user.role == 'SuperUser': return Store.objects.all()
         return Store.objects.filter(owner=self.request.user)
 
-@extend_schema(tags=['Stores'])
+    @decorators.action(detail=False, methods=['get'])
+    def me(self, request):
+        store = Store.objects.filter(owner=request.user).first()
+        if not store: return Response({"error": "Store not found."}, status=404)
+        serializer = self.get_serializer(store)
+        return Response(serializer.data)
+
+@extend_schema(tags=['Stores'], parameters=[OpenApiParameter("email", type=str, location="path", description="Staff email")])
 class StoreStaffViewSet(viewsets.ModelViewSet):
-    """Manage staff users linked to the store."""
+    lookup_field = 'email'
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
 
     def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-             return CustomUser.objects.none()
+        if getattr(self, 'swagger_fake_view', False): return CustomUser.objects.none()
         return CustomUser.objects.filter(store__owner=self.request.user)
     
     def perform_create(self, serializer):
         store = Store.objects.filter(owner=self.request.user).first()
         serializer.save(store=store, role='StoreKeeper')
 
-@extend_schema(tags=['Subscriptions'])
-class SubscriptionViewSet(viewsets.ModelViewSet):
-    serializer_class = SubscriptionSerializer
-    queryset = Subscription.objects.all()
-
-    def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-            return [IsSuperUser()]
-        return [permissions.IsAuthenticated()]
-
-    def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return Subscription.objects.none()
-        return Subscription.objects.filter(store__owner=self.request.user)
-
-@extend_schema(tags=['Billing'])
-class BillViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = BillSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return Bill.objects.none()
-        return Bill.objects.filter(store__owner=self.request.user)
-
-@extend_schema(tags=['Subscriptions'], request=CreateSubscriptionBillSerializer)
-class CreateSubscriptionBillView(views.APIView):
-    permission_classes = [IsStoreOwner]
-
-    def post(self, request):
-        serializer = CreateSubscriptionBillSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        try:
-            store = Store.objects.get(id=serializer.validated_data['store_id'], owner=request.user)
-            plan = Plan.objects.get(id=serializer.validated_data['plan_id'], is_active=True)
-        except (Store.DoesNotExist, Plan.DoesNotExist):
-            return Response({"error": "Store or Plan not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        staff_count = serializer.validated_data['staff_count']
-        total_amount = plan.price_per_user * staff_count
-        
-        # Ensure only one subscription per store (update if exists)
-        exp_date = timezone.now().date() + timezone.timedelta(days=plan.renewal_period_days)
-        
-        sub, created = Subscription.objects.update_or_create(
-            store=store,
-            defaults={
-                'plan': plan,
-                'max_staff': staff_count,
-                'expiry_date': exp_date,
-                'payment_status': 'Pending',
-                'next_billing_amount': total_amount
-            }
-        )
-        
-        bill = Bill.objects.create(
-            store=store,
-            subscription=sub,
-            plan=plan,
-            bill_type='NewSubscription',
-            amount=total_amount,
-            reference=f"SUB-{uuid.uuid4().hex[:10].upper()}",
-            description=f"{plan.title} subscription for {staff_count} staff slots",
-            status='Pending'
-        )
-        
-        return Response({
-            "bill": BillSerializer(bill).data,
-            "subscription": SubscriptionSerializer(sub).data
-        }, status=status.HTTP_201_CREATED)
-
-@extend_schema(tags=['Subscriptions'], request=AddStaffSerializer)
+@extend_schema(tags=['Subscriptions'], request=StoreAddStaffSerializer, responses={201: BillSerializer})
 class AddStaffView(views.APIView):
     permission_classes = [IsStoreOwner]
 
     def post(self, request):
-        serializer = AddStaffSerializer(data=request.data)
+        serializer = StoreAddStaffSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        store = Store.objects.get(id=serializer.validated_data['store_id'], owner=request.user)
+        store = Store.objects.filter(owner=request.user).first()
+        if not store: return Response({"error": "Store not found."}, status=404)
         
         try:
             sub = store.subscription
-            if sub.payment_status != 'Paid':
-                 return Response({"error": "No active/paid subscription found."}, status=status.HTTP_400_BAD_REQUEST)
-        except Subscription.DoesNotExist:
-             return Response({"error": "No subscription found."}, status=status.HTTP_400_BAD_REQUEST)
+            if sub.payment_status != 'Paid': return Response({"error": "No active/paid subscription found."}, status=400)
+        except Subscription.DoesNotExist: return Response({"error": "No subscription found."}, status=400)
         
         plan = sub.plan
-        if not plan:
-             return Response({"error": "Subscription plan not found."}, status=status.HTTP_400_BAD_REQUEST)
-             
-        count = serializer.validated_data['count']
-        amount = count * plan.price_per_user
+        adding_count = serializer.validated_data['count']
+        restorable = sub.reduced_slots_balance
+        
+        if adding_count <= restorable:
+            sub.max_staff += adding_count
+            sub.reduced_slots_balance -= adding_count
+            sub.save()
+            return Response({"message": f"Successfully restored {adding_count} slots.", "max_staff": sub.max_staff})
+        
+        already_restored = restorable
+        to_bill_count = adding_count - already_restored
+        if already_restored > 0:
+            sub.max_staff += already_restored
+            sub.reduced_slots_balance = 0
+            sub.save()
+
+        days_left = (sub.expiry_date - timezone.now().date()).days
+        if days_left <= 0: days_left = 1
+        total_amount = ( (plan.price_per_user * Decimal(days_left)) / Decimal(plan.renewal_period_days) * Decimal(to_bill_count) ).quantize(Decimal('0.01'))
         
         bill = Bill.objects.create(
-            store=store,
-            subscription=sub,
-            plan=plan,
-            bill_type='StaffAddition',
-            amount=amount,
-            reference=f"STF-{uuid.uuid4().hex[:10].upper()}",
-            description=f"Adding {count} staff slots to {plan.title}",
-            staff_count_change=count
+            store=store, subscription=sub, plan=plan, bill_type='StaffAddition', amount=total_amount,
+            reference=f"ADD-{uuid.uuid4().hex[:8].upper()}", staff_count_change=to_bill_count,
+            description=f"Addition of {to_bill_count} staff slots."
         )
         return Response(BillSerializer(bill).data, status=status.HTTP_201_CREATED)
 
-@extend_schema(tags=['Subscriptions'], request=ReduceStaffSerializer)
+@extend_schema(tags=['Subscriptions'], request=ReduceStaffSerializer, responses={200: OpenApiTypes.OBJECT})
 class ReduceStaffView(views.APIView):
     permission_classes = [IsStoreOwner]
 
     def post(self, request):
         serializer = ReduceStaffSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        store = Store.objects.get(id=serializer.validated_data['store_id'], owner=request.user)
+        store = Store.objects.filter(owner=request.user).first()
+        if not store: return Response({"error": "Store not found."}, status=404)
         
         try:
             sub = store.subscription
-            if sub.payment_status != 'Paid':
-                 return Response({"error": "No active/paid subscription found."}, status=status.HTTP_400_BAD_REQUEST)
-        except Subscription.DoesNotExist:
-             return Response({"error": "No subscription found."}, status=status.HTTP_400_BAD_REQUEST)
+        except Subscription.DoesNotExist: return Response({"error": "No subscription found."}, status=400)
         
-        plan = sub.plan
-        if not plan:
-             return Response({"error": "Subscription plan not found."}, status=status.HTTP_400_BAD_REQUEST)
-
         count = serializer.validated_data['count']
-        if sub.max_staff - count < 2:
-             return Response({"error": "Cannot reduce staff below 2."}, status=status.HTTP_400_BAD_REQUEST)
+        if sub.max_staff - count < 2: return Response({"error": "Cannot reduce below 2."}, status=400)
         
         sub.max_staff -= count
-        sub.next_billing_amount -= (count * plan.price_per_user)
+        sub.reduced_slots_balance += count
+        sub.next_billing_amount -= (count * sub.plan.price_per_user)
+        if sub.next_billing_amount < 0: sub.next_billing_amount = Decimal('0.00')
         sub.save()
-        
-        return Response({"message": f"Successfully reduced staff by {count}. Next bill updated."})
+        return Response({"message": f"Reduced by {count}.", "max_staff": sub.max_staff})
 
-def apply_bill_action(bill):
-    if bill.status != 'Paid':
-        bill.status = 'Paid'
-        bill.paid_at = timezone.now()
-        bill.save()
-        
-    sub = bill.subscription
-    if sub:
-        sub.payment_status = 'Paid'
-        if bill.bill_type == 'StaffAddition':
-             sub.max_staff += bill.staff_count_change
-             sub.next_billing_amount += (bill.staff_count_change * sub.plan.price_per_user)
-        sub.save()
-
-@extend_schema(tags=['Payments'])
-class PaystackCallbackView(views.APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request):
-        reference = request.query_params.get('reference')
-        if not reference:
-            return Response({"error": "No reference provided"}, status=400)
-            
-        import requests
-        from django.conf import settings
-        url = f"https://api.paystack.co/transaction/verify/{reference}"
-        headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        
-        if data.get('status') and data['data']['status'] == 'success':
-            try:
-                bill = Bill.objects.get(reference=reference)
-                if bill.status == 'Pending':
-                    apply_bill_action(bill)
-                return Response({"message": "Payment verified and applied."})
-            except Bill.DoesNotExist:
-                return Response({"error": "Bill not found"}, status=404)
-        
-        return Response({"error": "Payment verification failed"}, status=400)
-
-@extend_schema(tags=['Payments'])
-class PaystackWebhookView(views.APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        import hmac
-        import hashlib
-        from django.conf import settings
-        
-        signature = request.headers.get('x-paystack-signature')
-        if not signature:
-            return Response(status=400)
-            
-        payload = request.body
-        computed_signature = hmac.new(
-            settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
-            payload,
-            hashlib.sha512
-        ).hexdigest()
-        
-        if computed_signature != signature:
-            return Response(status=400)
-            
-        data = request.data
-        if data['event'] == 'charge.success':
-            reference = data['data']['reference']
-            try:
-                bill = Bill.objects.get(reference=reference)
-                if bill.status == 'Pending':
-                    apply_bill_action(bill)
-            except Bill.DoesNotExist:
-                pass
-                
-        return Response(status=200)
-
-@extend_schema(tags=['Billing'])
-class PayBillView(views.APIView):
-    permission_classes = [IsStoreOwner]
-
-    def post(self, request, pk):
-        try:
-            bill = Bill.objects.get(id=pk, store__owner=request.user, status='Pending')
-            return Response({
-                "checkout_url": f"https://checkout.paystack.com/mock-{bill.reference}",
-                "reference": bill.reference,
-                "amount": float(bill.amount)
-            })
-        except Bill.DoesNotExist:
-             return Response({"error": "Pending bill not found."}, status=status.HTTP_404_NOT_FOUND)
-
-@extend_schema(tags=['Stores'], request=AccountAddStaffSerializer)
+@extend_schema(tags=['Stores'], request=AccountAddStaffSerializer, responses={201: OpenApiTypes.OBJECT})
 class StoreStaffCreateView(views.APIView):
-    """Store owners adding staff user accounts."""
     permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
 
     def post(self, request):
         serializer = AccountAddStaffSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
         store = Store.objects.filter(owner=request.user).first()
-        if not store:
-            return Response({"error": "You must own a store to add staff."}, status=400)
-            
-        # Check Staff Limit based on Subscription
-        from accounts.models import CustomUser as AccountUser
+        if not store: return Response({"error": "No store found."}, status=400)
+        
         try:
             sub = store.subscription
-            if sub.payment_status != 'Paid' and sub.plan_type_legacy == 'Free':
-                 # If free, default to 2
-                 limit = 2
-            else:
-                 limit = sub.max_staff
-        except Exception:
-            limit = 2 # Default fallback
+            limit = sub.max_staff
+        except: limit = 2
 
-        current_staff_count = AccountUser.objects.filter(store=store).count()
-        if current_staff_count >= limit:
-             return Response({
-                 "error": f"Staff limit reached ({limit} slots).",
-                 "details": "Upgrade your plan or purchase more slots."
-             }, status=status.HTTP_400_BAD_REQUEST)
+        if CustomUser.objects.filter(store=store).count() >= limit:
+             return Response({"error": f"Limit reached ({limit})."}, status=400)
             
         user = serializer.save()
         user.is_active = True
         user.role = 'StoreKeeper'
         user.store = store
         user.save()
-        
-        return Response({
-            "message": "Store keeper account created successfully.",
-            "user": UserSerializer(user).data
-        }, status=status.HTTP_201_CREATED)
+        return Response({"message": "Staff created.", "user": UserSerializer(user).data})

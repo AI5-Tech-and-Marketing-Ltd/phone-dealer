@@ -6,14 +6,14 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.db import transaction, models
 from .serializers import (
-    ProductSerializer, MarketplaceProductSerializer, AllocationSerializer, 
-    BulkSoldSerializer, ConditionSerializer
+    ProductSerializer, AllocationSerializer, 
+    BulkSoldSerializer, ConditionSerializer, TacResponseSerializer
 )
 from .models import Product, Allocation, Condition
 from .filters import ProductFilter
 from .utils import fetch_imei_info
 
-@extend_schema(tags=['Inventory'])
+@extend_schema(tags=['Inventory'], responses=TacResponseSerializer)
 class TacListView(generics.GenericAPIView):
     """Paginated list of all TAC records from tacdb.csv."""
     permission_classes = [permissions.IsAuthenticated]
@@ -148,17 +148,6 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         return Response({"message": f"Successfully updated {updated_count} products."}, status=status.HTTP_200_OK)
 
-@extend_schema(tags=['Marketplace'])
-class MarketplaceViewSet(viewsets.ReadOnlyModelViewSet):
-    """Public list of available products with Public visibility."""
-    permission_classes = [permissions.AllowAny]
-    serializer_class = MarketplaceProductSerializer
-    
-    def get_queryset(self):
-        return Product.objects.filter(
-            status='Available',
-            availability='Public'
-        ).select_related('store')
 
 @extend_schema(tags=['Inventory'])
 class AllocationViewSet(viewsets.ModelViewSet):

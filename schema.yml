@@ -1,0 +1,4133 @@
+openapi: 3.0.3
+info:
+  title: Mobile Dealer SaaS API
+  version: 1.0.0
+  description: Robust API for multi-tenant mobile device inventory and sales
+paths:
+  /api/admin-portal/allocations/:
+    get:
+      operationId: admin_portal_allocations_list
+      tags:
+      - Admin Portal - Allocations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Allocation'
+          description: ''
+    post:
+      operationId: admin_portal_allocations_create
+      tags:
+      - Admin Portal - Allocations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+  /api/admin-portal/allocations/{id}/:
+    get:
+      operationId: admin_portal_allocations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Admin Portal - Allocations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+    put:
+      operationId: admin_portal_allocations_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Admin Portal - Allocations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+    patch:
+      operationId: admin_portal_allocations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Admin Portal - Allocations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAllocationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+    delete:
+      operationId: admin_portal_allocations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Admin Portal - Allocations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin-portal/bills/:
+    get:
+      operationId: admin_portal_bills_list
+      tags:
+      - Admin Portal - Billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bill'
+          description: ''
+    post:
+      operationId: admin_portal_bills_create
+      tags:
+      - Admin Portal - Billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BillRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BillRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+          description: ''
+  /api/admin-portal/bills/{id}/:
+    get:
+      operationId: admin_portal_bills_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bill.
+        required: true
+      tags:
+      - Admin Portal - Billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+          description: ''
+    put:
+      operationId: admin_portal_bills_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bill.
+        required: true
+      tags:
+      - Admin Portal - Billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BillRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BillRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+          description: ''
+    patch:
+      operationId: admin_portal_bills_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bill.
+        required: true
+      tags:
+      - Admin Portal - Billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBillRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBillRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBillRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+          description: ''
+    delete:
+      operationId: admin_portal_bills_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bill.
+        required: true
+      tags:
+      - Admin Portal - Billing
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin-portal/dashboard/:
+    get:
+      operationId: admin_portal_dashboard_retrieve
+      description: System-wide analytics for Super Admins.
+      tags:
+      - Admin Portal
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+          description: ''
+  /api/admin-portal/plans/:
+    get:
+      operationId: admin_portal_plans_list
+      description: Full CRUD for subscription plans (SuperAdmin only).
+      tags:
+      - Admin Portal - Plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+          description: ''
+    post:
+      operationId: admin_portal_plans_create
+      description: Full CRUD for subscription plans (SuperAdmin only).
+      tags:
+      - Admin Portal - Plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+  /api/admin-portal/plans/{id}/:
+    get:
+      operationId: admin_portal_plans_retrieve
+      description: Full CRUD for subscription plans (SuperAdmin only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this plan.
+        required: true
+      tags:
+      - Admin Portal - Plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+    put:
+      operationId: admin_portal_plans_update
+      description: Full CRUD for subscription plans (SuperAdmin only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this plan.
+        required: true
+      tags:
+      - Admin Portal - Plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+    patch:
+      operationId: admin_portal_plans_partial_update
+      description: Full CRUD for subscription plans (SuperAdmin only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this plan.
+        required: true
+      tags:
+      - Admin Portal - Plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+    delete:
+      operationId: admin_portal_plans_destroy
+      description: Full CRUD for subscription plans (SuperAdmin only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this plan.
+        required: true
+      tags:
+      - Admin Portal - Plans
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin-portal/products/:
+    get:
+      operationId: admin_portal_products_list
+      tags:
+      - Admin Portal - Products
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+    post:
+      operationId: admin_portal_products_create
+      tags:
+      - Admin Portal - Products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/admin-portal/products/{id}/:
+    get:
+      operationId: admin_portal_products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Admin Portal - Products
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    put:
+      operationId: admin_portal_products_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Admin Portal - Products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: admin_portal_products_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Admin Portal - Products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    delete:
+      operationId: admin_portal_products_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Admin Portal - Products
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin-portal/stores/:
+    get:
+      operationId: admin_portal_stores_list
+      tags:
+      - Admin Portal - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+          description: ''
+    post:
+      operationId: admin_portal_stores_create
+      tags:
+      - Admin Portal - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/admin-portal/stores/{id}/:
+    get:
+      operationId: admin_portal_stores_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Admin Portal - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    put:
+      operationId: admin_portal_stores_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Admin Portal - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    patch:
+      operationId: admin_portal_stores_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Admin Portal - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    delete:
+      operationId: admin_portal_stores_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Admin Portal - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin-portal/stores/{id}/change-owner/:
+    post:
+      operationId: admin_portal_stores_change_owner_create
+      description: Update the store's primary owner.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Admin Portal - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeOwnerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangeOwnerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangeOwnerRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/admin-portal/stores/{id}/staff/:
+    get:
+      operationId: admin_portal_stores_staff_retrieve
+      description: List all users under this store.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Admin Portal - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/admin-portal/subscriptions/:
+    get:
+      operationId: admin_portal_subscriptions_list
+      tags:
+      - Admin Portal - Subscriptions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+          description: ''
+    post:
+      operationId: admin_portal_subscriptions_create
+      tags:
+      - Admin Portal - Subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/admin-portal/subscriptions/{id}/:
+    get:
+      operationId: admin_portal_subscriptions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this subscription.
+        required: true
+      tags:
+      - Admin Portal - Subscriptions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+    put:
+      operationId: admin_portal_subscriptions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this subscription.
+        required: true
+      tags:
+      - Admin Portal - Subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+    patch:
+      operationId: admin_portal_subscriptions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this subscription.
+        required: true
+      tags:
+      - Admin Portal - Subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSubscriptionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+    delete:
+      operationId: admin_portal_subscriptions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this subscription.
+        required: true
+      tags:
+      - Admin Portal - Subscriptions
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin-portal/users/:
+    get:
+      operationId: admin_portal_users_list
+      description: Full user CRUD for Super Admins.
+      tags:
+      - Admin Portal - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: admin_portal_users_create
+      description: Full user CRUD for Super Admins.
+      tags:
+      - Admin Portal - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminUserCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminUserCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserCreate'
+          description: ''
+  /api/admin-portal/users/{email}/:
+    get:
+      operationId: admin_portal_users_retrieve
+      description: Full user CRUD for Super Admins.
+      parameters:
+      - in: path
+        name: email
+        schema:
+          type: string
+          format: email
+        description: A unique value identifying this User.
+        required: true
+      tags:
+      - Admin Portal - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: admin_portal_users_update
+      description: Full user CRUD for Super Admins.
+      parameters:
+      - in: path
+        name: email
+        schema:
+          type: string
+          format: email
+        description: A unique value identifying this User.
+        required: true
+      tags:
+      - Admin Portal - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: admin_portal_users_partial_update
+      description: Full user CRUD for Super Admins.
+      parameters:
+      - in: path
+        name: email
+        schema:
+          type: string
+          format: email
+        description: A unique value identifying this User.
+        required: true
+      tags:
+      - Admin Portal - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: admin_portal_users_destroy
+      description: Full user CRUD for Super Admins.
+      parameters:
+      - in: path
+        name: email
+        schema:
+          type: string
+          format: email
+        description: A unique value identifying this User.
+        required: true
+      tags:
+      - Admin Portal - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/admin-portal/users/{email}/assign-store/:
+    post:
+      operationId: admin_portal_users_assign_store_create
+      description: Add/Update/Remove a user from a store and change role.
+      parameters:
+      - in: path
+        name: email
+        schema:
+          type: string
+          format: email
+        description: A unique value identifying this User.
+        required: true
+      tags:
+      - Admin Portal - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignStoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssignStoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssignStoreRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/auth/activate/:
+    post:
+      operationId: auth_activate_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountActivationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccountActivationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountActivationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '205':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/password-reset/:
+    post:
+      operationId: auth_password_reset_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/password-reset/confirm/:
+    post:
+      operationId: auth_password_reset_confirm_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/resend-activation/:
+    post:
+      operationId: auth_resend_activation_create
+      description: Resend activation email if the user is not active yet.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/signup/:
+    post:
+      operationId: auth_signup_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Signup'
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/inventory/:
+    get:
+      operationId: inventory_list
+      description: Internal inventory management for store staff.
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: conditions
+        schema:
+          type: string
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - in: query
+        name: model
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: store
+        schema:
+          type: integer
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+    post:
+      operationId: inventory_create
+      description: Internal inventory management for store staff.
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/inventory/{id}/:
+    get:
+      operationId: inventory_retrieve
+      description: Internal inventory management for store staff.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    put:
+      operationId: inventory_update
+      description: Internal inventory management for store staff.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: inventory_partial_update
+      description: Internal inventory management for store staff.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    delete:
+      operationId: inventory_destroy
+      description: Internal inventory management for store staff.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/inventory/allocations/:
+    get:
+      operationId: inventory_allocations_list
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Allocation'
+          description: ''
+    post:
+      operationId: inventory_allocations_create
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+  /api/inventory/allocations/{id}/:
+    get:
+      operationId: inventory_allocations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+    put:
+      operationId: inventory_allocations_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+    patch:
+      operationId: inventory_allocations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAllocationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Allocation'
+          description: ''
+    delete:
+      operationId: inventory_allocations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this allocation.
+        required: true
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/inventory/bulk-sold/:
+    post:
+      operationId: inventory_bulk_sold_create
+      description: Internal inventory management for store staff.
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkSoldRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BulkSoldRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BulkSoldRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/inventory/conditions/:
+    get:
+      operationId: inventory_conditions_list
+      description: Store specific device conditions.
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Condition'
+          description: ''
+    post:
+      operationId: inventory_conditions_create
+      description: Store specific device conditions.
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConditionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConditionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConditionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Condition'
+          description: ''
+  /api/inventory/conditions/{id}/:
+    get:
+      operationId: inventory_conditions_retrieve
+      description: Store specific device conditions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this condition.
+        required: true
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Condition'
+          description: ''
+    put:
+      operationId: inventory_conditions_update
+      description: Store specific device conditions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this condition.
+        required: true
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConditionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConditionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConditionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Condition'
+          description: ''
+    patch:
+      operationId: inventory_conditions_partial_update
+      description: Store specific device conditions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this condition.
+        required: true
+      tags:
+      - Inventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedConditionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedConditionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedConditionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Condition'
+          description: ''
+    delete:
+      operationId: inventory_conditions_destroy
+      description: Store specific device conditions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this condition.
+        required: true
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/inventory/imei-lookup/{imei}/:
+    get:
+      operationId: inventory_imei_lookup_retrieve
+      description: Lookup device information by IMEI
+      parameters:
+      - in: path
+        name: imei
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+        required: true
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/inventory/marketplace/:
+    get:
+      operationId: inventory_marketplace_list
+      description: Public list of available products with Public visibility.
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: conditions
+        schema:
+          type: string
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - in: query
+        name: model
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: store
+        schema:
+          type: integer
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MarketplaceProduct'
+          description: ''
+  /api/inventory/marketplace/{id}/:
+    get:
+      operationId: inventory_marketplace_retrieve
+      description: Public list of available products with Public visibility.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceProduct'
+          description: ''
+  /api/inventory/marketplace/filters_metadata/:
+    get:
+      operationId: inventory_marketplace_filters_metadata_retrieve
+      description: Returns unique brands, models, and conditions for frontend filters.
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceProduct'
+          description: ''
+  /api/inventory/marketplace/stores/:
+    get:
+      operationId: inventory_marketplace_stores_retrieve
+      description: Returns public list of active stores.
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceProduct'
+          description: ''
+  /api/inventory/tac-list/:
+    get:
+      operationId: inventory_tac_list_retrieve
+      description: Paginated list of all TAC records from tacdb.csv.
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number (starting from 1)
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Items per page (max 200)
+      tags:
+      - Inventory
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TacResponse'
+          description: ''
+  /api/marketplace/:
+    get:
+      operationId: marketplace_list
+      description: Public read-only product list with filtering.
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: conditions
+        schema:
+          type: string
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - in: query
+        name: model
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: store
+        schema:
+          type: integer
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+  /api/marketplace/products/:
+    get:
+      operationId: marketplace_products_list
+      description: Public read-only product list with filtering.
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: conditions
+        schema:
+          type: string
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - in: query
+        name: model
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: store
+        schema:
+          type: integer
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+  /api/marketplace/products/{id}/:
+    get:
+      operationId: marketplace_products_retrieve
+      description: Public product detail.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/marketplace/stores/:
+    get:
+      operationId: marketplace_stores_list
+      description: Public store list.
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+          description: ''
+  /api/marketplace/stores/{id}/:
+    get:
+      operationId: marketplace_stores_retrieve
+      description: Public store detail.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/marketplace/stores/{id}/products/:
+    get:
+      operationId: marketplace_stores_products_list
+      description: Products in a specific store.
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: conditions
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - in: query
+        name: model
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: store
+        schema:
+          type: integer
+      tags:
+      - Marketplace
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+  /api/profile/:
+    get:
+      operationId: profile_retrieve
+      tags:
+      - Profile
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+    put:
+      operationId: profile_update
+      tags:
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+    patch:
+      operationId: profile_partial_update
+      tags:
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/profile/change-password/:
+    post:
+      operationId: profile_change_password_create
+      tags:
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/profile/delete-account/:
+    post:
+      operationId: profile_delete_account_create
+      tags:
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeleteAccountRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/store/:
+    get:
+      operationId: store_list
+      tags:
+      - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+          description: ''
+    post:
+      operationId: store_create
+      tags:
+      - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/store/{id}/:
+    get:
+      operationId: store_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    put:
+      operationId: store_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    patch:
+      operationId: store_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStoreRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    delete:
+      operationId: store_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/store/bills/:
+    get:
+      operationId: store_bills_list
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bill'
+          description: ''
+  /api/store/bills/{id}/:
+    get:
+      operationId: store_bills_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bill.
+        required: true
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+          description: ''
+  /api/store/bills/{id}/pay/:
+    post:
+      operationId: store_bills_pay_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: pk
+        schema:
+          type: integer
+        description: Bill ID
+        required: true
+      tags:
+      - Billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/store/me/:
+    get:
+      operationId: store_me_retrieve
+      tags:
+      - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/store/payments/callback/:
+    get:
+      operationId: store_payments_callback_retrieve
+      tags:
+      - Payments
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/store/payments/webhook/:
+    post:
+      operationId: store_payments_webhook_create
+      tags:
+      - Payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/store/plans/:
+    get:
+      operationId: store_plans_list
+      description: Public list of available subscription plans.
+      tags:
+      - Plans
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+          description: ''
+  /api/store/plans/{id}/:
+    get:
+      operationId: store_plans_retrieve
+      description: Public list of available subscription plans.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this plan.
+        required: true
+      tags:
+      - Plans
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+          description: ''
+  /api/store/staff/:
+    get:
+      operationId: store_staff_list
+      description: Manage staff users linked to the store.
+      tags:
+      - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: store_staff_create
+      description: Manage staff users linked to the store.
+      tags:
+      - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/store/staff/{id}/:
+    get:
+      operationId: store_staff_retrieve
+      description: Manage staff users linked to the store.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: StoreKeeper User ID
+        required: true
+      tags:
+      - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: store_staff_update
+      description: Manage staff users linked to the store.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: StoreKeeper User ID
+        required: true
+      tags:
+      - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: store_staff_partial_update
+      description: Manage staff users linked to the store.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: StoreKeeper User ID
+        required: true
+      tags:
+      - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: store_staff_destroy
+      description: Manage staff users linked to the store.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: StoreKeeper User ID
+        required: true
+      tags:
+      - Stores
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/store/staff/account-create/:
+    post:
+      operationId: store_staff_account_create_create
+      description: Store owners adding staff user accounts.
+      tags:
+      - Stores
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddStaffRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddStaffRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddStaffRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/store/subscribe/:
+    post:
+      operationId: store_subscribe_create
+      tags:
+      - Subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionBillRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionBillRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionBillRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/store/subscriptions/add-staff/:
+    post:
+      operationId: store_subscriptions_add_staff_create
+      tags:
+      - Subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreAddStaffRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StoreAddStaffRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StoreAddStaffRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bill'
+          description: ''
+  /api/store/subscriptions/reduce-staff/:
+    post:
+      operationId: store_subscriptions_reduce_staff_create
+      tags:
+      - Subscriptions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReduceStaffRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReduceStaffRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReduceStaffRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    AccountActivationRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+      required:
+      - token
+    AddStaffRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - full_name
+      - password
+    AdminUserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        store:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - email
+      - full_name
+    AdminUserCreateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        store:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - email
+      - full_name
+      - password
+    Allocation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        notes:
+          type: string
+          nullable: true
+        product:
+          type: integer
+        allocated_from:
+          type: string
+          format: email
+          nullable: true
+        allocated_to:
+          type: string
+          format: email
+          nullable: true
+        store:
+          type: integer
+      required:
+      - id
+      - product
+      - store
+      - timestamp
+    AllocationRequest:
+      type: object
+      properties:
+        notes:
+          type: string
+          nullable: true
+        product:
+          type: integer
+        allocated_from:
+          type: string
+          format: email
+          minLength: 1
+          nullable: true
+        allocated_to:
+          type: string
+          format: email
+          minLength: 1
+          nullable: true
+        store:
+          type: integer
+      required:
+      - product
+      - store
+    AssignStoreRequest:
+      type: object
+      properties:
+        store_id:
+          type: integer
+          nullable: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+    AvailabilityEnum:
+      enum:
+      - Private
+      - Public
+      type: string
+      description: |-
+        * `Private` - Private
+        * `Public` - Public
+    Bill:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        bill_type:
+          $ref: '#/components/schemas/BillTypeEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reference:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BillStatusEnum'
+          readOnly: true
+        description:
+          type: string
+        staff_count_change:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        store:
+          type: integer
+        subscription:
+          type: integer
+          nullable: true
+        plan:
+          type: integer
+          nullable: true
+      required:
+      - amount
+      - bill_type
+      - created_at
+      - id
+      - paid_at
+      - reference
+      - status
+      - store
+    BillRequest:
+      type: object
+      properties:
+        bill_type:
+          $ref: '#/components/schemas/BillTypeEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        description:
+          type: string
+        staff_count_change:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        store:
+          type: integer
+        subscription:
+          type: integer
+          nullable: true
+        plan:
+          type: integer
+          nullable: true
+      required:
+      - amount
+      - bill_type
+      - store
+    BillStatusEnum:
+      enum:
+      - Pending
+      - Paid
+      - Failed
+      - Cancelled
+      type: string
+      description: |-
+        * `Pending` - Pending
+        * `Paid` - Paid
+        * `Failed` - Failed
+        * `Cancelled` - Cancelled
+    BillTypeEnum:
+      enum:
+      - NewSubscription
+      - Renewal
+      - StaffAddition
+      type: string
+      description: |-
+        * `NewSubscription` - NewSubscription
+        * `Renewal` - Renewal
+        * `StaffAddition` - StaffAddition
+    BillingCycleEnum:
+      enum:
+      - Monthly
+      - Yearly
+      type: string
+      description: |-
+        * `Monthly` - Monthly
+        * `Yearly` - Yearly
+    BulkSoldRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+        imeis:
+          type: array
+          items:
+            type: string
+            minLength: 1
+    ChangeOwnerRequest:
+      type: object
+      properties:
+        new_owner_email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - new_owner_email
+    ChangePasswordRequest:
+      type: object
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - new_password
+      - old_password
+    Condition:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        store:
+          type: integer
+      required:
+      - id
+      - name
+      - store
+    ConditionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        store:
+          type: integer
+      required:
+      - name
+      - store
+    CreateSubscriptionBillRequest:
+      type: object
+      properties:
+        plan_id:
+          type: integer
+        staff_count:
+          type: integer
+          minimum: 1
+          default: 2
+      required:
+      - plan_id
+    DashboardStats:
+      type: object
+      properties:
+        total_users:
+          type: integer
+        total_stores:
+          type: integer
+        total_products:
+          type: integer
+        active_subscriptions:
+          type: integer
+      required:
+      - active_subscriptions
+      - total_products
+      - total_stores
+      - total_users
+    DeleteAccountRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    MarketplaceProduct:
+      type: object
+      description: Public serializer for marketplace, excluding sensitive info like
+        cost_price.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        brand:
+          type: string
+          maxLength: 100
+        model_name:
+          type: string
+          maxLength: 100
+        selling_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        availability:
+          allOf:
+          - $ref: '#/components/schemas/AvailabilityEnum'
+          readOnly: true
+        store:
+          type: integer
+        store_name:
+          type: string
+          readOnly: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+        conditions:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - availability
+      - brand
+      - conditions
+      - created_at
+      - id
+      - model_name
+      - selling_price
+      - store
+      - store_name
+    PasswordResetConfirmRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - new_password
+      - token
+      - uid
+    PasswordResetRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    PatchedAllocationRequest:
+      type: object
+      properties:
+        notes:
+          type: string
+          nullable: true
+        product:
+          type: integer
+        allocated_from:
+          type: string
+          format: email
+          minLength: 1
+          nullable: true
+        allocated_to:
+          type: string
+          format: email
+          minLength: 1
+          nullable: true
+        store:
+          type: integer
+    PatchedBillRequest:
+      type: object
+      properties:
+        bill_type:
+          $ref: '#/components/schemas/BillTypeEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        description:
+          type: string
+        staff_count_change:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        store:
+          type: integer
+        subscription:
+          type: integer
+          nullable: true
+        plan:
+          type: integer
+          nullable: true
+    PatchedConditionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        store:
+          type: integer
+    PatchedPlanRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+        price_per_user:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Price per staff slot
+        features:
+          description: List of feature names
+        billing_cycle:
+          $ref: '#/components/schemas/BillingCycleEnum'
+        renewal_period_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+    PatchedProductRequest:
+      type: object
+      properties:
+        condition_list:
+          type: string
+          writeOnly: true
+          minLength: 1
+          description: Comma separated conditions
+        brand:
+          type: string
+          minLength: 1
+          maxLength: 100
+        model_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        imei_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        selling_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        availability:
+          $ref: '#/components/schemas/AvailabilityEnum'
+        image:
+          type: string
+          format: binary
+          nullable: true
+        store:
+          type: integer
+    PatchedProfileRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        profile_picture:
+          type: string
+          minLength: 1
+          nullable: true
+          title: Image
+    PatchedStoreRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        logo:
+          type: string
+          format: binary
+          nullable: true
+        cover_picture:
+          type: string
+          format: binary
+          nullable: true
+    PatchedSubscriptionRequest:
+      type: object
+      properties:
+        expiry_date:
+          type: string
+          format: date
+        max_staff:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        reduced_slots_balance:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        next_billing_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        store:
+          type: integer
+        plan:
+          type: integer
+          nullable: true
+    PatchedUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        profile_picture:
+          type: string
+          minLength: 1
+          nullable: true
+          title: Image
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        price_per_user:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Price per staff slot
+        features:
+          description: List of feature names
+        billing_cycle:
+          $ref: '#/components/schemas/BillingCycleEnum'
+        renewal_period_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+      required:
+      - id
+      - price_per_user
+      - title
+    PlanRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+        price_per_user:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Price per staff slot
+        features:
+          description: List of feature names
+        billing_cycle:
+          $ref: '#/components/schemas/BillingCycleEnum'
+        renewal_period_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+      required:
+      - price_per_user
+      - title
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        conditions:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        brand:
+          type: string
+          maxLength: 100
+        model_name:
+          type: string
+          maxLength: 100
+        imei_number:
+          type: string
+          maxLength: 20
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        selling_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        availability:
+          $ref: '#/components/schemas/AvailabilityEnum'
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        store:
+          type: integer
+      required:
+      - brand
+      - conditions
+      - cost_price
+      - created_at
+      - id
+      - imei_number
+      - model_name
+      - selling_price
+      - store
+      - updated_at
+    ProductRequest:
+      type: object
+      properties:
+        condition_list:
+          type: string
+          writeOnly: true
+          minLength: 1
+          description: Comma separated conditions
+        brand:
+          type: string
+          minLength: 1
+          maxLength: 100
+        model_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        imei_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        cost_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        selling_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/ProductStatusEnum'
+        availability:
+          $ref: '#/components/schemas/AvailabilityEnum'
+        image:
+          type: string
+          format: binary
+          nullable: true
+        store:
+          type: integer
+      required:
+      - brand
+      - cost_price
+      - imei_number
+      - model_name
+      - selling_price
+      - store
+    ProductStatusEnum:
+      enum:
+      - Available
+      - Allocated
+      - Sold
+      type: string
+      description: |-
+        * `Available` - Available
+        * `Allocated` - Allocated
+        * `Sold` - Sold
+    Profile:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        profile_picture:
+          type: string
+          nullable: true
+          title: Image
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - full_name
+      - is_email_verified
+      - role
+    ProfileRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        profile_picture:
+          type: string
+          minLength: 1
+          nullable: true
+          title: Image
+      required:
+      - full_name
+    ReduceStaffRequest:
+      type: object
+      properties:
+        count:
+          type: integer
+          minimum: 1
+      required:
+      - count
+    RoleEnum:
+      enum:
+      - SuperUser
+      - StoreOwner
+      - StoreKeeper
+      type: string
+      description: |-
+        * `SuperUser` - SuperUser
+        * `StoreOwner` - StoreOwner
+        * `StoreKeeper` - StoreKeeper
+    Signup:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+      required:
+      - email
+      - full_name
+    SignupRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - full_name
+      - password
+    Store:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/Subscription'
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        cover_picture:
+          type: string
+          format: uri
+          nullable: true
+        is_active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        owner:
+          type: string
+          format: email
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_active
+      - name
+      - owner
+      - subscription
+      - updated_at
+    StoreAddStaffRequest:
+      type: object
+      properties:
+        count:
+          type: integer
+          minimum: 1
+      required:
+      - count
+    StoreRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        logo:
+          type: string
+          format: binary
+          nullable: true
+        cover_picture:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - name
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        plan_details:
+          allOf:
+          - $ref: '#/components/schemas/Plan'
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+          readOnly: true
+        expiry_date:
+          type: string
+          format: date
+        payment_status:
+          type: string
+          readOnly: true
+        max_staff:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        reduced_slots_balance:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        next_billing_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        store:
+          type: integer
+        plan:
+          type: integer
+          nullable: true
+      required:
+      - expiry_date
+      - id
+      - payment_status
+      - plan_details
+      - start_date
+      - store
+    SubscriptionRequest:
+      type: object
+      properties:
+        expiry_date:
+          type: string
+          format: date
+        max_staff:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        reduced_slots_balance:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        next_billing_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        store:
+          type: integer
+        plan:
+          type: integer
+          nullable: true
+      required:
+      - expiry_date
+      - store
+    TacRecord:
+      type: object
+      properties:
+        tac:
+          type: string
+        brand:
+          type: string
+        name:
+          type: string
+        aka:
+          type: array
+          items:
+            type: string
+        contributor:
+          type: string
+        comment:
+          type: string
+        gsmarena_1:
+          type: string
+          format: uri
+        gsmarena_2:
+          type: string
+          format: uri
+      required:
+      - aka
+      - brand
+      - comment
+      - contributor
+      - gsmarena_1
+      - gsmarena_2
+      - name
+      - tac
+    TacResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_records:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TacRecord'
+      required:
+      - page
+      - page_size
+      - results
+      - total_records
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        profile_picture:
+          type: string
+          nullable: true
+          title: Image
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+      required:
+      - date_joined
+      - email
+      - full_name
+      - is_active
+    UserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        profile_picture:
+          type: string
+          minLength: 1
+          nullable: true
+          title: Image
+      required:
+      - email
+      - full_name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

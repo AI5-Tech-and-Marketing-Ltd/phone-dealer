@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'stores',
     'inventory',
     'admin_portal',
+    'marketplace',
+    'billing',
     'rest_framework_simplejwt.token_blacklist',
 ]
 
@@ -212,6 +214,15 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Robust API for multi-tenant mobile device inventory and sales',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_PATCH': True,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_NAME_OVERRIDES': {
+        'ProductStatusEnum': 'inventory.models.Product.STATUS_CHOICES',
+        'BillStatusEnum': 'billing.models.Bill.STATUS_CHOICES',
+    },
+    'COMPONENT_NAME_OVERRIDES': {
+        'AddStaff': 'accounts.serializers.AddStaffSerializer',
+    },
 }
 
 # Cloudinary Storage

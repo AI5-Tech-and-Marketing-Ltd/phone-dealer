@@ -16,7 +16,10 @@ urlpatterns = [
     path('api/inventory/', include('inventory.urls')),
     
     # Marketplace
-    path('api/marketplace/', include('inventory.urls_marketplace')),
+    path('api/marketplace/', include('marketplace.urls')),
+    
+    # Billing
+    path('api/billing/', include('billing.urls')),
     
     # SuperAdmin
     path('api/admin-portal/', include('admin_portal.urls')),

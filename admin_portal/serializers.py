@@ -21,3 +21,10 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+class DashboardStatsSerializer(serializers.Serializer):
+    total_users = serializers.IntegerField()
+    total_stores = serializers.IntegerField()
+    total_products = serializers.IntegerField()
+    active_subscriptions = serializers.IntegerField()
+    total_revenue = serializers.DecimalField(max_digits=12, decimal_places=2)

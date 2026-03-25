@@ -6,8 +6,9 @@ class ProductFilter(filters.FilterSet):
     max_price = filters.NumberFilter(field_name="selling_price", lookup_expr='lte')
     brand = filters.CharFilter(lookup_expr='icontains')
     model = filters.CharFilter(field_name="model_name", lookup_expr='icontains')
+    conditions = filters.CharFilter(field_name="conditions__name", lookup_expr='iexact')
     status = filters.CharFilter(lookup_expr='exact')
 
     class Meta:
         model = Product
-        fields = ['brand', 'model', 'status', 'min_price', 'max_price', 'store']
+        fields = ['brand', 'model', 'status', 'min_price', 'max_price', 'store', 'conditions']

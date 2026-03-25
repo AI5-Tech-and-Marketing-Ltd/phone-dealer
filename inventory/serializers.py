@@ -40,20 +40,6 @@ class ProductSerializer(serializers.ModelSerializer):
                 product.conditions.add(condition)
         return product
 
-class MarketplaceProductSerializer(serializers.ModelSerializer):
-    """Public serializer for marketplace, excluding sensitive info like cost_price."""
-    conditions = serializers.StringRelatedField(many=True, read_only=True)
-    store_name = serializers.CharField(source='store.name', read_only=True)
-
-    class Meta:
-        model = Product
-        fields = (
-            'id', 'brand', 'model_name', 'selling_price', 'status', 
-            'availability', 'store', 'store_name', 'image', 'conditions', 
-            'created_at'
-        )
-        read_only_fields = ('availability',)
-
 class AllocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Allocation
@@ -68,3 +54,19 @@ class BulkSoldSerializer(serializers.Serializer):
         if not attrs.get('ids') and not attrs.get('imeis'):
              raise serializers.ValidationError("Either 'ids' or 'imeis' must be provided.")
         return attrs
+
+class TacRecordSerializer(serializers.Serializer):
+    tac = serializers.CharField()
+    brand = serializers.CharField()
+    name = serializers.CharField()
+    aka = serializers.ListField(child=serializers.CharField())
+    contributor = serializers.CharField()
+    comment = serializers.CharField()
+    gsmarena_1 = serializers.URLField()
+    gsmarena_2 = serializers.URLField()
+
+class TacResponseSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
+    page_size = serializers.IntegerField()
+    total_records = serializers.IntegerField()
+    results = TacRecordSerializer(many=True)
