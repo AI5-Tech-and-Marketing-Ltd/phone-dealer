@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from cloudinary.models import CloudinaryField
 
 class Plan(models.Model):
     CYCLE_CHOICES = (
@@ -24,8 +23,8 @@ class Store(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='stores')
     subscription_plan = models.CharField(max_length=50, default='Free')
     staff_limit = models.PositiveIntegerField(default=2)
-    logo = CloudinaryField('image', null=True, blank=True)
-    cover_picture = CloudinaryField('image', null=True, blank=True)
+    logo = models.ImageField(upload_to='stores/logos/', null=True, blank=True)
+    cover_picture = models.ImageField(upload_to='stores/banners/', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

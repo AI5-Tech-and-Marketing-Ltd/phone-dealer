@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from cloudinary.models import CloudinaryField
 
 class Condition(models.Model):
     name = models.CharField(max_length=50)
@@ -33,7 +32,7 @@ class Product(models.Model):
     availability = models.CharField(max_length=10, choices=AVAILABILITY_CHOICES, default='Private')
     
     store = models.ForeignKey('stores.Store', on_delete=models.CASCADE, related_name='products')
-    image = CloudinaryField('image', null=True, blank=True)
+    image = models.ImageField(upload_to='products/', null=True, blank=True)
     conditions = models.ManyToManyField(Condition, blank=True, related_name='products')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
