@@ -13,7 +13,7 @@ from inventory.models import Product, Allocation
 from inventory.serializers import ProductSerializer, AllocationSerializer
 from .serializers import AssignStoreSerializer, ChangeOwnerSerializer, AdminUserCreateSerializer, DashboardStatsSerializer
 
-@extend_schema(tags=['Admin Portal'], responses=DashboardStatsSerializer)
+@extend_schema(tags=['Admin Portal - Dashboard'], responses=DashboardStatsSerializer)
 class DashboardStatsView(views.APIView):
     """System-wide analytics for Super Admins."""
     permission_classes = [IsSuperUser]
