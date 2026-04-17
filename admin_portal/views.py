@@ -29,13 +29,32 @@ class DashboardStatsView(views.APIView):
             "total_revenue": total_revenue
         })
 
-@extend_schema(tags=['Admin Portal - Users'], parameters=[OpenApiParameter("email", type=str, location="path", description="User email")])
+@extend_schema(tags=['Admin Portal - Users'])
 class UserManagementViewSet(viewsets.ModelViewSet):
     """Full user CRUD for Super Admins."""
     lookup_field = 'email'
+    lookup_value_regex = '[^/]+' # Allow dots in email lookup
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsSuperUser]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("search", type=str, location="query", description="Search by email or full name")
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = CustomUser.objects.all()
+        search = self.request.query_params.get('search')
+        if search:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(email__icontains=search) | Q(full_name__icontains=search)
+            )
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'create': return AdminUserCreateSerializer
