@@ -200,7 +200,6 @@ class CreateSubscriptionBillView(views.APIView):
 
 @extend_schema(
     tags=['Billing'],
-    parameters=[OpenApiParameter(name='pk', type=int, location='path', description='Bill ID')],
     request=None,
     responses={200: BillCheckoutResponseSerializer},
     examples=[
@@ -254,7 +253,21 @@ class PayBillView(views.APIView):
         except Bill.DoesNotExist:
              return Response({"error": "Pending bill not found."}, status=status.HTTP_404_NOT_FOUND)
 
-@extend_schema(tags=['Payments'], responses={200: OpenApiTypes.OBJECT})
+@extend_schema(
+    tags=['Payments'], 
+    request=OpenApiTypes.OBJECT,
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Callback Example',
+            value={
+                'trxref': 'TKN-ABC123XYZ',
+                'reference': 'TKN-ABC123XYZ'
+            },
+            request_only=True
+        )
+    ]
+)
 class PaystackCallbackView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -336,12 +349,12 @@ class PaystackWebhookView(views.APIView):
         return Response(status=200)
 
 @extend_schema(tags=['Billing'])
-class PaymentCardViewSet(viewsets.ModelViewSet):
+class PaymentCardViewSet(viewsets.ReadOnlyModelViewSet, viewsets.mixins.DestroyModelMixin, viewsets.mixins.UpdateModelMixin):
     """Manage saved payment cards for the store."""
     serializer_class = PaymentCardSerializer
     from accounts.permissions import IsStoreOwner
     permission_classes = [IsStoreOwner]
-    http_method_names = ['get', 'post', 'delete', 'head', 'options']
+    http_method_names = ['get', 'delete', 'post', 'head', 'options']
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):

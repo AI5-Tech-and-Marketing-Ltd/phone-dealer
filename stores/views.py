@@ -1,4 +1,5 @@
 import uuid
+from django.db.models import Q
 from decimal import Decimal
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status, views, decorators
@@ -14,10 +15,10 @@ from billing.permissions import HasActiveSubscription
 from .analytics_utils import get_store_analytics
 from billing.views import initialize_paystack_payment
 
+from .serializers import StoreSerializer
+
 @extend_schema(tags=['Stores'])
 class StoreViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer # Placeholder for StoreSerializer if needed
-    from .serializers import StoreSerializer
     serializer_class = StoreSerializer
     queryset = Store.objects.all()
 
@@ -32,9 +33,8 @@ class StoreViewSet(viewsets.ModelViewSet):
         if self.request.user.role == 'SuperUser': return Store.objects.all()
         # Owners and Keepers can see their respective store
         return Store.objects.filter(
-            permissions.models.Q(owner=self.request.user) | 
-            permissions.models.Q(staff_users=self.request.user) |
-            permissions.models.Q(id=getattr(self.request.user, 'store_id', None))
+            Q(owner=self.request.user) | 
+            Q(staff_users=self.request.user)
         ).distinct()
         # Simplified for now since CustomUser has store field or stores related name
 
