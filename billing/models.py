@@ -28,6 +28,7 @@ class Subscription(models.Model):
     max_staff = models.PositiveIntegerField(default=2)
     reduced_slots_balance = models.PositiveIntegerField(default=0)
     next_billing_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    auto_renew = models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.store.name} - {self.plan.title if self.plan else 'No Plan'} (Expires: {self.expiry_date})"
@@ -42,6 +43,7 @@ class Bill(models.Model):
         ('NewSubscription', 'NewSubscription'),
         ('Renewal', 'Renewal'),
         ('StaffAddition', 'StaffAddition'),
+        ('CardTokenization', 'CardTokenization'),
     )
     STATUS_CHOICES = (
         ('Pending', 'Pending'),
@@ -58,8 +60,28 @@ class Bill(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     description = models.TextField(blank=True)
     staff_count_change = models.IntegerField(default=0)
+    save_card = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Bill {self.reference} - {self.store.name} ({self.status})"
+
+class PaymentCard(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='payment_cards')
+    authorization_code = models.CharField(max_length=100)
+    card_type = models.CharField(max_length=50)
+    last4 = models.CharField(max_length=4)
+    exp_month = models.CharField(max_length=2)
+    exp_year = models.CharField(max_length=4)
+    bank = models.CharField(max_length=100)
+    is_primary = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.is_primary:
+            PaymentCard.objects.filter(store=self.store).exclude(id=self.id).update(is_primary=False)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.card_type.capitalize()} card ending in {self.last4} ({self.store.name})"

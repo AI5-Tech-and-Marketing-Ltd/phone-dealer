@@ -12,6 +12,7 @@ from accounts.serializers import UserSerializer, AddStaffSerializer as AccountAd
 from accounts.permissions import IsStoreOwner, IsStoreKeeper, IsSuperUser
 from billing.permissions import HasActiveSubscription
 from .analytics_utils import get_store_analytics
+from billing.views import initialize_paystack_payment
 
 @extend_schema(tags=['Stores'])
 class StoreViewSet(viewsets.ModelViewSet):
@@ -69,7 +70,7 @@ class StoreStaffViewSet(viewsets.ModelViewSet):
     examples=[
         OpenApiExample(
             'Add Staff Slots Example',
-            value={'count': 2},
+            value={'count': 2, 'save_card': True},
             request_only=True
         )
     ]
@@ -114,7 +115,32 @@ class AddStaffView(views.APIView):
             reference=f"ADD-{uuid.uuid4().hex[:8].upper()}", staff_count_change=to_bill_count,
             description=f"Addition of {to_bill_count} staff slots."
         )
-        return Response(BillSerializer(bill).data, status=status.HTTP_201_CREATED)
+
+        # Handle auto-save logic: if auto_renew is on, save card by default
+        save_card = serializer.validated_data.get('save_card', False)
+        if sub.auto_renew:
+            save_card = True
+        
+        if save_card:
+            bill.save_card = True
+            bill.save()
+
+        paystack_data = initialize_paystack_payment(request, bill)
+        
+        response_data = { "bill": BillSerializer(bill).data }
+        if paystack_data.get('status'):
+            response_data.update({
+                "checkout_url": paystack_data['data']['authorization_url'],
+                "access_code": paystack_data['data']['access_code'],
+                "reference": bill.reference
+            })
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        
+        return Response({
+            "error": "Bill created but payment initialization failed",
+            "details": paystack_data,
+            "bill": BillSerializer(bill).data
+        }, status=status.HTTP_201_CREATED)
 
 @extend_schema(
     tags=['Subscriptions'], 
