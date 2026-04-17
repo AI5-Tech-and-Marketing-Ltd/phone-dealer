@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status, views, decorators
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiExample
 from .models import Store
 from billing.models import Plan, Subscription, Bill
 from billing.serializers import BillSerializer, StoreAddStaffSerializer, ReduceStaffSerializer
@@ -49,7 +49,18 @@ class StoreStaffViewSet(viewsets.ModelViewSet):
         store = Store.objects.filter(owner=self.request.user).first()
         serializer.save(store=store, role='StoreKeeper')
 
-@extend_schema(tags=['Subscriptions'], request=StoreAddStaffSerializer, responses={201: BillSerializer})
+@extend_schema(
+    tags=['Subscriptions'], 
+    request=StoreAddStaffSerializer, 
+    responses={201: BillSerializer},
+    examples=[
+        OpenApiExample(
+            'Add Staff Slots Example',
+            value={'count': 2},
+            request_only=True
+        )
+    ]
+)
 class AddStaffView(views.APIView):
     permission_classes = [IsStoreOwner]
 
@@ -92,7 +103,18 @@ class AddStaffView(views.APIView):
         )
         return Response(BillSerializer(bill).data, status=status.HTTP_201_CREATED)
 
-@extend_schema(tags=['Subscriptions'], request=ReduceStaffSerializer, responses={200: OpenApiTypes.OBJECT})
+@extend_schema(
+    tags=['Subscriptions'], 
+    request=ReduceStaffSerializer, 
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Reduce Staff Slots Example',
+            value={'count': 1},
+            request_only=True
+        )
+    ]
+)
 class ReduceStaffView(views.APIView):
     permission_classes = [IsStoreOwner]
 
@@ -116,7 +138,23 @@ class ReduceStaffView(views.APIView):
         sub.save()
         return Response({"message": f"Reduced by {count}.", "max_staff": sub.max_staff})
 
-@extend_schema(tags=['Stores'], request=AccountAddStaffSerializer, responses={201: OpenApiTypes.OBJECT})
+@extend_schema(
+    tags=['Stores'], 
+    request=AccountAddStaffSerializer, 
+    responses={201: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Create Staff Account Example',
+            value={
+                'email': 'staff@example.com',
+                'full_name': 'John Staff',
+                'phone_number': '08012345678',
+                'password': 'staffpassword123'
+            },
+            request_only=True
+        )
+    ]
+)
 class StoreStaffCreateView(views.APIView):
     permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
 

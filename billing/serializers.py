@@ -8,6 +8,8 @@ class PlanSerializer(serializers.ModelSerializer):
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     plan_details = PlanSerializer(source='plan', read_only=True)
+    is_active = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = Subscription
         fields = '__all__'
@@ -18,6 +20,12 @@ class BillSerializer(serializers.ModelSerializer):
         model = Bill
         fields = '__all__'
         read_only_fields = ('created_at', 'paid_at', 'reference', 'status')
+
+class BillCheckoutResponseSerializer(serializers.Serializer):
+    checkout_url = serializers.URLField()
+    reference = serializers.CharField()
+    amount = serializers.FloatField()
+    access_code = serializers.CharField(required=False)
 
 class CreateSubscriptionBillSerializer(serializers.Serializer):
     plan_id = serializers.IntegerField()

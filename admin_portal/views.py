@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import views, viewsets, permissions, status, serializers, decorators
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiExample
 from accounts.models import CustomUser
 from accounts.serializers import UserSerializer
 from accounts.permissions import IsSuperUser
@@ -41,7 +41,31 @@ class UserManagementViewSet(viewsets.ModelViewSet):
         if self.action == 'create': return AdminUserCreateSerializer
         return UserSerializer
 
-    @extend_schema(request=AssignStoreSerializer)
+    @extend_schema(
+        request=AssignStoreSerializer,
+        examples=[
+            OpenApiExample(
+                'Assign Store Example',
+                value={'store_id': 1, 'role': 'StoreOwner'},
+                request_only=True
+            )
+        ]
+    )
+    @extend_schema(
+        request=AdminUserCreateSerializer,
+        examples=[
+            OpenApiExample(
+                'Admin Create User Example',
+                value={
+                    'email': 'admin@example.com',
+                    'full_name': 'Admin User',
+                    'role': 'SuperUser',
+                    'password': 'securepassword123'
+                },
+                request_only=True
+            )
+        ]
+    )
     @decorators.action(detail=True, methods=['POST'], url_path='assign-store')
     def assign_store(self, request, pk=None):
         """Add/Update/Remove a user from a store and change role."""
@@ -67,7 +91,16 @@ class AdminStoreViewSet(viewsets.ModelViewSet):
     serializer_class = StoreSerializer
     permission_classes = [IsSuperUser]
 
-    @extend_schema(request=ChangeOwnerSerializer)
+    @extend_schema(
+        request=ChangeOwnerSerializer,
+        examples=[
+            OpenApiExample(
+                'Change Owner Example',
+                value={'new_owner_email': 'newowner@example.com'},
+                request_only=True
+            )
+        ]
+    )
     @decorators.action(detail=True, methods=['POST'], url_path='change-owner')
     def change_owner(self, request, pk=None):
         """Update the store's primary owner."""
@@ -93,7 +126,23 @@ class AdminStoreViewSet(viewsets.ModelViewSet):
         staff = CustomUser.objects.filter(store=store)
         return Response(UserSerializer(staff, many=True).data)
 
-@extend_schema(tags=['Admin Portal - Plans'])
+@extend_schema(
+    tags=['Admin Portal - Plans'],
+    examples=[
+        OpenApiExample(
+            'Plan CRUD Example',
+            value={
+                'title': 'Premium Plan',
+                'description': 'Advanced features for large stores',
+                'price_per_user': 5000.0,
+                'billing_cycle': 'Monthly',
+                'renewal_period_days': 30,
+                'features': ['Unlimited Products', 'Advanced Analytics']
+            },
+            request_only=True
+        )
+    ]
+)
 class AdminPlanViewSet(viewsets.ModelViewSet):
     """Full CRUD for subscription plans (SuperAdmin only)."""
     queryset = Plan.objects.all()

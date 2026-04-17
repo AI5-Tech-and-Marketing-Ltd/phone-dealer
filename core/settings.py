@@ -223,6 +223,29 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_NAME_OVERRIDES': {
         'AddStaff': 'accounts.serializers.AddStaffSerializer',
     },
+    'TAGS': [
+        # --- Auth & Profile ---
+        {'name': 'Auth',        'description': 'Registration, login, activation, password management'},
+        {'name': 'Profile',     'description': 'Authenticated user profile management'},
+        # --- User / StoreKeeper ---
+        {'name': 'Marketplace', 'description': 'Public product listings for buyers/storekeepers'},
+        {'name': 'Inventory',   'description': 'Product and allocation management (store staff)'},
+        # --- Store Owner ---
+        {'name': 'Stores',         'description': '🏪 Store Owner – store and staff management'},
+        {'name': 'Plans',          'description': '🏪 Store Owner – available subscription plans'},
+        {'name': 'Subscriptions',  'description': '🏪 Store Owner – subscription lifecycle and staff slots'},
+        {'name': 'Billing',        'description': '🏪 Store Owner – bills and payment history'},
+        {'name': 'Payments',       'description': '🏪 Store Owner – Paystack callbacks and webhooks'},
+        # --- SuperAdmin ---
+        {'name': 'Admin Portal - Dashboard',      'description': '🔐 SuperAdmin – system-wide analytics'},
+        {'name': 'Admin Portal - Users',          'description': '🔐 SuperAdmin – user management'},
+        {'name': 'Admin Portal - Stores',         'description': '🔐 SuperAdmin – store administration'},
+        {'name': 'Admin Portal - Plans',          'description': '🔐 SuperAdmin – subscription plan CRUD'},
+        {'name': 'Admin Portal - Subscriptions',  'description': '🔐 SuperAdmin – subscription administration'},
+        {'name': 'Admin Portal - Billing',        'description': '🔐 SuperAdmin – billing administration'},
+        {'name': 'Admin Portal - Products',       'description': '🔐 SuperAdmin – product administration'},
+        {'name': 'Admin Portal - Allocations',    'description': '🔐 SuperAdmin – allocation administration'},
+    ],
 }
 
 # Cloudinary Storage

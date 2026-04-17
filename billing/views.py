@@ -3,19 +3,21 @@ from decimal import Decimal
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status, views, decorators
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiExample
 from .models import Plan, Subscription, Bill
 from stores.models import Store
 from .serializers import (
     PlanSerializer, SubscriptionSerializer, BillSerializer, 
-    CreateSubscriptionBillSerializer
+    CreateSubscriptionBillSerializer, BillCheckoutResponseSerializer
 )
 
 def apply_bill_action(bill):
-    if bill.status != 'Paid':
-        bill.status = 'Paid'
-        bill.paid_at = timezone.now()
-        bill.save()
+    if bill.status == 'Paid':
+        return # Idempotent safety
+        
+    bill.status = 'Paid'
+    bill.paid_at = timezone.now()
+    bill.save()
         
     sub = bill.subscription
     if sub:
@@ -23,6 +25,9 @@ def apply_bill_action(bill):
         if bill.bill_type == 'StaffAddition':
              sub.max_staff += bill.staff_count_change
              sub.next_billing_amount += (bill.staff_count_change * sub.plan.price_per_user)
+        elif bill.bill_type in ['NewSubscription', 'Renewal']:
+             # In a real app, renewal/expiry logic would go here
+             pass
         sub.save()
 
 @extend_schema(tags=['Plans'])
@@ -60,7 +65,14 @@ class BillViewSet(viewsets.ReadOnlyModelViewSet):
 @extend_schema(
     tags=['Subscriptions'], 
     request=CreateSubscriptionBillSerializer,
-    responses={201: OpenApiTypes.OBJECT}
+    responses={201: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Create Subscription Bill Example',
+            value={'plan_id': 1, 'staff_count': 5},
+            request_only=True
+        )
+    ]
 )
 class CreateSubscriptionBillView(views.APIView):
     from accounts.permissions import IsStoreOwner
@@ -115,7 +127,19 @@ class CreateSubscriptionBillView(views.APIView):
     tags=['Billing'],
     parameters=[OpenApiParameter(name='pk', type=int, location='path', description='Bill ID')],
     request=None,
-    responses={200: OpenApiTypes.OBJECT}
+    responses={200: BillCheckoutResponseSerializer},
+    examples=[
+        OpenApiExample(
+            'Pay Bill Response Example',
+            value={
+                "checkout_url": "https://checkout.paystack.com/access_code",
+                "reference": "SUB-1234567890",
+                "amount": 5000.0,
+                "access_code": "access_code"
+            },
+            response_only=True
+        )
+    ]
 )
 class PayBillView(views.APIView):
     from accounts.permissions import IsStoreOwner
@@ -124,11 +148,41 @@ class PayBillView(views.APIView):
     def post(self, request, pk):
         try:
             bill = Bill.objects.get(id=pk, store__owner=request.user, status='Pending')
-            return Response({
-                "checkout_url": f"https://checkout.paystack.com/mock-{bill.reference}",
+            
+            import requests
+            from django.conf import settings
+            
+            url = "https://api.paystack.co/transaction/initialize"
+            headers = {
+                "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+                "Content-Type": "application/json"
+            }
+            # Amount in kobo
+            payload = {
+                "email": request.user.email,
+                "amount": int(bill.amount * 100),
                 "reference": bill.reference,
-                "amount": float(bill.amount)
-            })
+                "callback_url": f"{settings.FRONTEND_URL}/subscription/verify",
+                "metadata": {
+                    "bill_id": bill.id
+                }
+            }
+            
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                data = response.json()
+                
+                if data.get('status'):
+                    return Response({
+                        "checkout_url": data['data']['authorization_url'],
+                        "reference": bill.reference,
+                        "amount": float(bill.amount),
+                        "access_code": data['data']['access_code']
+                    })
+                return Response({"error": "Paystack initialization failed", "details": data}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({"error": f"Payment provider error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
         except Bill.DoesNotExist:
              return Response({"error": "Pending bill not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -159,7 +213,25 @@ class PaystackCallbackView(views.APIView):
         
         return Response({"error": "Payment verification failed"}, status=400)
 
-@extend_schema(tags=['Payments'], request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
+@extend_schema(
+    tags=['Payments'], 
+    request=OpenApiTypes.OBJECT, 
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Paystack Webhook Example',
+            value={
+                "event": "charge.success",
+                "data": {
+                    "reference": "SUB-1234567890",
+                    "status": "success",
+                    "amount": 500000
+                }
+            },
+            request_only=True
+        )
+    ]
+)
 class PaystackWebhookView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -179,7 +251,7 @@ class PaystackWebhookView(views.APIView):
         if computed_signature != signature: return Response(status=400)
             
         data = request.data
-        if data['event'] == 'charge.success':
+        if data.get('event') == 'charge.success':
             reference = data['data']['reference']
             try:
                 bill = Bill.objects.get(reference=reference)

@@ -6,10 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from rest_framework import status, views, generics, permissions
-from drf_spectacular.utils import extend_schema, OpenApiTypes
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken, BlacklistedToken, OutstandingToken
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiExample
 from .serializers import (
     SignupSerializer, ProfileSerializer, UserSerializer,
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
@@ -18,7 +15,21 @@ from .serializers import (
 )
 from .models import CustomUser
 
-@extend_schema(tags=['Auth'])
+@extend_schema(
+    tags=['Auth'],
+    examples=[
+        OpenApiExample(
+            'Signup Example',
+            value={
+                'email': 'owner@example.com',
+                'full_name': 'Store Owner',
+                'phone_number': '08098765432',
+                'password': 'ownerpassword123'
+            },
+            request_only=True
+        )
+    ]
+)
 class SignupView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = SignupSerializer
@@ -54,7 +65,14 @@ class SignupView(generics.CreateAPIView):
 @extend_schema(
     tags=['Auth'], 
     request=AccountActivationSerializer,
-    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Account Activation Example',
+            value={'token': 'uuid-activation-token-here'},
+            request_only=True
+        )
+    ]
 )
 class AccountActivateView(views.APIView):
     permission_classes = (permissions.AllowAny,)
@@ -76,7 +94,14 @@ class AccountActivateView(views.APIView):
 @extend_schema(
     tags=['Auth'], 
     request=PasswordResetRequestSerializer,
-    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Resend Activation Example',
+            value={'email': 'user@example.com'},
+            request_only=True
+        )
+    ]
 )
 class ResendActivationView(views.APIView):
     """Resend activation email if the user is not active yet."""
@@ -111,7 +136,14 @@ class ResendActivationView(views.APIView):
 @extend_schema(
     tags=['Auth'], 
     request=PasswordResetRequestSerializer,
-    responses={200: OpenApiTypes.OBJECT}
+    responses={200: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Password Reset Request Example',
+            value={'email': 'user@example.com'},
+            request_only=True
+        )
+    ]
 )
 class PasswordResetRequestView(views.APIView):
     permission_classes = (permissions.AllowAny,)
@@ -141,7 +173,18 @@ class PasswordResetRequestView(views.APIView):
 @extend_schema(
     tags=['Auth'], 
     request=PasswordResetConfirmSerializer,
-    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Password Reset Confirm Example',
+            value={
+                'uid': 'base64-uid',
+                'token': 'reset-token',
+                'new_password': 'newsecurepassword123'
+            },
+            request_only=True
+        )
+    ]
 )
 class PasswordResetConfirmView(views.APIView):
     permission_classes = (permissions.AllowAny,)
@@ -164,7 +207,14 @@ class PasswordResetConfirmView(views.APIView):
 @extend_schema(
     tags=['Auth'], 
     request=LogoutSerializer,
-    responses={205: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+    responses={205: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Logout Example',
+            value={'refresh': 'token-string-here'},
+            request_only=True
+        )
+    ]
 )
 class LogoutView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -189,7 +239,17 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 @extend_schema(
     tags=['Profile'], 
     request=ChangePasswordSerializer,
-    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT}
+    responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Change Password Example',
+            value={
+                'old_password': 'currentpassword123',
+                'new_password': 'newsecurepassword123'
+            },
+            request_only=True
+        )
+    ]
 )
 class ChangePasswordView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -207,7 +267,14 @@ class ChangePasswordView(views.APIView):
 @extend_schema(
     tags=['Profile'], 
     request=DeleteAccountSerializer,
-    responses={204: None, 400: OpenApiTypes.OBJECT}
+    responses={204: None, 400: OpenApiTypes.OBJECT},
+    examples=[
+        OpenApiExample(
+            'Delete Account Example',
+            value={'password': 'currentpassword123'},
+            request_only=True
+        )
+    ]
 )
 class DeleteAccountView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
