@@ -87,7 +87,7 @@ class PlanViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 @extend_schema(tags=['Subscriptions'])
-class SubscriptionViewSet(viewsets.ModelViewSet):
+class SubscriptionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
 
@@ -98,6 +98,18 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         if getattr(self, 'swagger_fake_view', False):
             return Subscription.objects.none()
         return Subscription.objects.filter(store__owner=self.request.user)
+    
+
+    @decorators.action(detail=False, methods=['get'])
+    def me(self, request):
+        store = Store.objects.filter(owner=request.user).first()
+        if not store:
+            return Response({"error": "No store found."}, status=404)
+        try:
+            sub = store.subscription
+            return Response(self.get_serializer(sub).data)
+        except Subscription.DoesNotExist:
+            return Response({"error": "No subscription found."}, status=404)
 
 @extend_schema(tags=['Billing'])
 class BillViewSet(viewsets.ReadOnlyModelViewSet):

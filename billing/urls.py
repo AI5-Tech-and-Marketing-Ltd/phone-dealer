@@ -9,6 +9,7 @@ from .views import (
 
 router = routers.DefaultRouter()
 router.register(r'plans', PlanViewSet, basename='plan')
+router.register(r'subscriptions', SubscriptionViewSet, basename='subscription')
 router.register(r'bills', BillViewSet, basename='bill')
 router.register(r'cards', PaymentCardViewSet, basename='card')
 
