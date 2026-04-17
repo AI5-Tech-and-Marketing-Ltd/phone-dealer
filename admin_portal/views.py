@@ -46,6 +46,10 @@ class UserManagementViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @extend_schema(parameters=[])
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
     def get_queryset(self):
         queryset = CustomUser.objects.all()
         search = self.request.query_params.get('search')
