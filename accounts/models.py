@@ -33,9 +33,9 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
-        ('SuperUser', 'SuperUser'),
-        ('StoreOwner', 'StoreOwner'),
-        ('StoreKeeper', 'StoreKeeper'),
+        ('SuperUser', 'Super User'),
+        ('StoreOwner', 'Store Owner'),
+        ('StoreKeeper', 'Store Keeper'),
     )
 
     email = models.EmailField(unique=True, primary_key=True)

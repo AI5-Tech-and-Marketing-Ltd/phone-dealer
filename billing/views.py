@@ -42,10 +42,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
 
-    def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-            return [permissions.IsAdminUser()]
-        return [permissions.IsAuthenticated()]
+    from accounts.permissions import IsStoreOwner
+    permission_classes = [IsStoreOwner]
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -55,7 +53,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 @extend_schema(tags=['Billing'])
 class BillViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BillSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    from accounts.permissions import IsStoreOwner
+    permission_classes = [IsStoreOwner]
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):

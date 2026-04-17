@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import CustomUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,10 +44,29 @@ class AddStaffSerializer(serializers.ModelSerializer):
         return user
 
 class ProfileSerializer(serializers.ModelSerializer):
+    subscription = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'phone_number', 'profile_picture', 'role', 'is_email_verified')
+        fields = ('email', 'full_name', 'phone_number', 'profile_picture', 'role', 'is_email_verified', 'subscription')
         read_only_fields = ('email', 'role', 'is_email_verified')
+
+    def get_subscription(self, obj):
+        from billing.models import Subscription
+        from billing.serializers import SubscriptionSerializer
+        store = None
+        if obj.role == 'StoreOwner':
+            store = obj.stores.first()
+        elif obj.role == 'StoreKeeper':
+            store = obj.store
+        
+        if store:
+            try:
+                sub = store.subscription
+                return SubscriptionSerializer(sub).data
+            except Subscription.DoesNotExist:
+                return None
+        return None
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -68,3 +88,34 @@ class DeleteAccountSerializer(serializers.Serializer):
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+        
+        # User profile
+        from .serializers import ProfileSerializer
+        data['user'] = ProfileSerializer(user).data
+        
+        # Role
+        data['role'] = user.role
+        
+        # Store & Subscription info (already in ProfileSerializer if we use it, but user asked for them specifically)
+        # ProfileSerializer already includes 'subscription' field.
+        # Let's add store info.
+        from stores.models import Store
+        from stores.serializers import StoreSerializer
+        
+        store = None
+        if user.role == 'StoreOwner':
+            store = user.stores.first()
+        elif user.role == 'StoreKeeper':
+            store = user.store
+            
+        if store:
+            data['store'] = StoreSerializer(store).data
+        else:
+            data['store'] = None
+            
+        return data

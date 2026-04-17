@@ -7,13 +7,18 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from rest_framework import status, views, generics, permissions
 from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiExample
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import (
     SignupSerializer, ProfileSerializer, UserSerializer,
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     AccountActivationSerializer, ChangePasswordSerializer, DeleteAccountSerializer,
-    LogoutSerializer
+    LogoutSerializer, CustomTokenObtainPairSerializer
 )
 from .models import CustomUser
+
+@extend_schema(tags=['Auth'])
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 @extend_schema(
     tags=['Auth'],

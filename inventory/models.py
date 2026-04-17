@@ -34,6 +34,7 @@ class Product(models.Model):
     store = models.ForeignKey('stores.Store', on_delete=models.CASCADE, related_name='products')
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     conditions = models.ManyToManyField(Condition, blank=True, related_name='products')
+    sold_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

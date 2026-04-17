@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiExample
 import csv
 import os
 from django.conf import settings
@@ -5,6 +6,7 @@ from rest_framework import viewsets, permissions, status, decorators, generics
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.db import transaction, models
+from django.utils import timezone
 from .serializers import (
     ProductSerializer, AllocationSerializer, 
     BulkSoldSerializer, ConditionSerializer, TacResponseSerializer
@@ -12,11 +14,13 @@ from .serializers import (
 from .models import Product, Allocation, Condition
 from .filters import ProductFilter
 from .utils import fetch_imei_info
+from billing.permissions import HasActiveSubscription
+from accounts.permissions import IsStoreOwner, IsStoreKeeper, IsSuperUser
 
 @extend_schema(tags=['Inventory'], responses=TacResponseSerializer)
 class TacListView(generics.GenericAPIView):
     """Paginated list of all TAC records from tacdb.csv."""
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsSuperUser]
 
     @extend_schema(
         parameters=[
@@ -75,16 +79,26 @@ class TacListView(generics.GenericAPIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-@extend_schema(tags=['Inventory'])
+@extend_schema(
+    tags=['Inventory'],
+    examples=[
+        OpenApiExample(
+            'Create Condition Example',
+            value={'name': 'Slight Scratch', 'description': 'Minor cosmetic damage'},
+            request_only=True
+        )
+    ]
+)
 class ConditionViewSet(viewsets.ModelViewSet):
     """Store specific device conditions."""
     serializer_class = ConditionSerializer
     queryset = Condition.objects.all()
     
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            from accounts.permissions import IsStoreOwner, IsSuperUser
-            return [(IsStoreOwner | IsSuperUser)()]
+        if self.action == 'create':
+            return [permissions.IsAuthenticated(), (IsStoreOwner | IsStoreKeeper)(), HasActiveSubscription()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsStoreOwner(), HasActiveSubscription()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
@@ -97,7 +111,25 @@ class ConditionViewSet(viewsets.ModelViewSet):
             models.Q(store__owner=user) | models.Q(store=getattr(user, 'store', None))
         ).distinct()
 
-@extend_schema(tags=['Inventory'])
+@extend_schema(
+    tags=['Inventory'],
+    examples=[
+        OpenApiExample(
+            'Create Product Example',
+            value={
+                'brand': 'Apple',
+                'model_name': 'iPhone 13',
+                'imei_number': '351234567890126',
+                'cost_price': 400000.0,
+                'selling_price': 550000.0,
+                'status': 'Available',
+                'availability': 'Public',
+                'condition_list': 'New, Factory Unlocked'
+            },
+            request_only=True
+        )
+    ]
+)
 class ProductViewSet(viewsets.ModelViewSet):
     """Internal inventory management for store staff."""
     serializer_class = ProductSerializer
@@ -105,9 +137,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_class = ProductFilter
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            from accounts.permissions import IsStoreOwner, IsSuperUser
-            return [(IsStoreOwner | IsSuperUser)()]
+        if self.action == 'create':
+            return [permissions.IsAuthenticated(), (IsStoreOwner | IsStoreKeeper)(), HasActiveSubscription()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsStoreOwner(), HasActiveSubscription()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
@@ -121,6 +154,17 @@ class ProductViewSet(viewsets.ModelViewSet):
             models.Q(store__owner=user) | models.Q(store=getattr(user, 'store', None))
         ).distinct()
 
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        # Only check status if it's in validated_data
+        status_val = serializer.validated_data.get('status')
+        if status_val == 'Sold' and instance.status != 'Sold':
+            serializer.save(sold_at=timezone.now())
+        elif status_val and status_val != 'Sold':
+            serializer.save(sold_at=None)
+        else:
+            serializer.save()
+
     @extend_schema(description="Lookup device information by IMEI")
     @decorators.action(detail=False, methods=['GET'], url_path='imei-lookup/(?P<imei>[0-9]+)')
     def imei_lookup(self, request, imei=None):
@@ -132,8 +176,17 @@ class ProductViewSet(viewsets.ModelViewSet):
              info['product'] = None
         return Response(info)
 
-    @extend_schema(request=BulkSoldSerializer)
-    @decorators.action(detail=False, methods=['POST'], url_path='bulk-sold')
+    @extend_schema(
+        request=BulkSoldSerializer,
+        examples=[
+            OpenApiExample(
+                'Bulk Sold Example',
+                value={'ids': [1, 2, 3], 'imeis': ['351234567890126']},
+                request_only=True
+            )
+        ]
+    )
+    @decorators.action(detail=False, methods=['POST'], url_path='bulk-sold', permission_classes=[HasActiveSubscription])
     @transaction.atomic
     def bulk_sold(self, request):
         serializer = BulkSoldSerializer(data=request.data)
@@ -144,7 +197,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         updated_count = Product.objects.filter(
             models.Q(id__in=ids) | models.Q(imei_number__in=imeis)
-        ).update(status='Sold')
+        ).update(status='Sold', sold_at=timezone.now())
         
         return Response({"message": f"Successfully updated {updated_count} products."}, status=status.HTTP_200_OK)
 
@@ -153,7 +206,13 @@ class ProductViewSet(viewsets.ModelViewSet):
 class AllocationViewSet(viewsets.ModelViewSet):
     serializer_class = AllocationSerializer
     queryset = Allocation.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return [permissions.IsAuthenticated(), (IsStoreOwner | IsStoreKeeper)(), HasActiveSubscription()]
+        if self.action == 'destroy':
+            return [permissions.IsAuthenticated(), IsStoreOwner(), HasActiveSubscription()]
+        return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user

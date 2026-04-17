@@ -9,7 +9,9 @@ from billing.models import Plan, Subscription, Bill
 from billing.serializers import BillSerializer, StoreAddStaffSerializer, ReduceStaffSerializer
 from accounts.models import CustomUser
 from accounts.serializers import UserSerializer, AddStaffSerializer as AccountAddStaffSerializer
-from accounts.permissions import IsStoreOwner, IsSuperUser
+from accounts.permissions import IsStoreOwner, IsStoreKeeper, IsSuperUser
+from billing.permissions import HasActiveSubscription
+from .analytics_utils import get_store_analytics
 
 @extend_schema(tags=['Stores'])
 class StoreViewSet(viewsets.ModelViewSet):
@@ -19,18 +21,29 @@ class StoreViewSet(viewsets.ModelViewSet):
     queryset = Store.objects.all()
 
     def get_permissions(self):
+        # StoreOwner: all operations. StoreKeeper: Get only.
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-             return [(IsStoreOwner | IsSuperUser)()]
+             return [permissions.IsAuthenticated(), IsStoreOwner(), HasActiveSubscription()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False): return Store.objects.none()
         if self.request.user.role == 'SuperUser': return Store.objects.all()
-        return Store.objects.filter(owner=self.request.user)
+        # Owners and Keepers can see their respective store
+        return Store.objects.filter(
+            permissions.models.Q(owner=self.request.user) | 
+            permissions.models.Q(staff_users=self.request.user) |
+            permissions.models.Q(id=getattr(self.request.user, 'store_id', None))
+        ).distinct()
+        # Simplified for now since CustomUser has store field or stores related name
 
     @decorators.action(detail=False, methods=['get'])
     def me(self, request):
-        store = Store.objects.filter(owner=request.user).first()
+        if request.user.role == 'StoreOwner':
+            store = Store.objects.filter(owner=request.user).first()
+        else:
+            store = getattr(request.user, 'store', None)
+            
         if not store: return Response({"error": "Store not found."}, status=404)
         serializer = self.get_serializer(store)
         return Response(serializer.data)
@@ -62,7 +75,7 @@ class StoreStaffViewSet(viewsets.ModelViewSet):
     ]
 )
 class AddStaffView(views.APIView):
-    permission_classes = [IsStoreOwner]
+    permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
 
     def post(self, request):
         serializer = StoreAddStaffSerializer(data=request.data)
@@ -116,7 +129,7 @@ class AddStaffView(views.APIView):
     ]
 )
 class ReduceStaffView(views.APIView):
-    permission_classes = [IsStoreOwner]
+    permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
 
     def post(self, request):
         serializer = ReduceStaffSerializer(data=request.data)
@@ -178,3 +191,32 @@ class StoreStaffCreateView(views.APIView):
         user.store = store
         user.save()
         return Response({"message": "Staff created.", "user": UserSerializer(user).data})
+
+@extend_schema(
+    tags=['Stores'],
+    parameters=[
+        OpenApiParameter("start_date", type=str, location="query", description="YYYY-MM-DD"),
+        OpenApiParameter("end_date", type=str, location="query", description="YYYY-MM-DD"),
+        OpenApiParameter("group_by", type=str, location="query", enum=['daily', 'weekly', 'monthly', 'annually']),
+    ],
+    responses={200: OpenApiTypes.OBJECT}
+)
+class AnalyticsView(views.APIView):
+    """Business Intelligence for Store Owners."""
+    permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
+
+    def get(self, request):
+        if request.user.role == 'StoreOwner':
+            store = Store.objects.filter(owner=request.user).first()
+        else:
+            store = getattr(request.user, 'store', None)
+            
+        if not store:
+            return Response({"error": "No store found."}, status=404)
+        
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        group_by = request.query_params.get('group_by', 'daily')
+        
+        data = get_store_analytics(store, start_date, end_date, group_by)
+        return Response(data)

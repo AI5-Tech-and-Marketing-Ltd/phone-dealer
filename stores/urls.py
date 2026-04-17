@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
 from .views import (
-    StoreViewSet, StoreStaffViewSet, AddStaffView, ReduceStaffView, StoreStaffCreateView
+    StoreViewSet, StoreStaffViewSet, AddStaffView, ReduceStaffView, StoreStaffCreateView,
+    AnalyticsView
 )
 
 router = routers.DefaultRouter()
@@ -12,5 +13,6 @@ urlpatterns = [
     path('subscriptions/add-staff/', AddStaffView.as_view(), name='add-staff-slot'),
     path('staff/account-create/', StoreStaffCreateView.as_view(), name='add-staff-account'),
     path('subscriptions/reduce-staff/', ReduceStaffView.as_view(), name='reduce-staff'),
+    path('analytics/', AnalyticsView.as_view(), name='store-analytics'),
     path('', include(router.urls)),
 ]
