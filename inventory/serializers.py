@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Allocation, Condition
+from .models import Product, Allocation, Condition, TacRecord
 
 class ConditionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,17 +55,40 @@ class BulkSoldSerializer(serializers.Serializer):
              raise serializers.ValidationError("Either 'ids' or 'imeis' must be provided.")
         return attrs
 
-class TacRecordSerializer(serializers.Serializer):
-    tac = serializers.CharField()
-    brand = serializers.CharField()
-    name = serializers.CharField()
-    aka = serializers.ListField(child=serializers.CharField())
-    contributor = serializers.CharField()
-    comment = serializers.CharField()
-    gsmarena_1 = serializers.URLField()
-    gsmarena_2 = serializers.URLField()
+# --- TAC Serializers ---
+
+class TacRecordSerializer(serializers.ModelSerializer):
+    """Used for read, single-create, and list responses."""
+    class Meta:
+        model  = TacRecord
+        fields = ['id', 'tac', 'brand', 'name', 'aka',
+                  'contributor', 'comment', 'gsmarena_1', 'gsmarena_2',
+                  'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate_tac(self, value):
+        if not value.isdigit() or len(value) != 8:
+            raise serializers.ValidationError("TAC must be exactly 8 digits.")
+        return value
+
+class TacBulkSerializer(serializers.Serializer):
+    """Accepts a list of TAC records for bulk creation."""
+    records = TacRecordSerializer(many=True)
+
+    def validate_records(self, value):
+        if not value:
+            raise serializers.ValidationError("records list must not be empty.")
+        return value
+
+class TacUploadResultSerializer(serializers.Serializer):
+    """Response shape for upload/bulk endpoints."""
+    created = serializers.IntegerField()
+    updated = serializers.IntegerField()
+    skipped = serializers.IntegerField()
+    errors  = serializers.ListField(child=serializers.DictField())
 
 class TacResponseSerializer(serializers.Serializer):
+    """Legacy/Generic response shape."""
     page = serializers.IntegerField()
     page_size = serializers.IntegerField()
     total_records = serializers.IntegerField()

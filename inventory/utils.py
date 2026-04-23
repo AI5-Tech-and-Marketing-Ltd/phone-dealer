@@ -22,17 +22,40 @@ def validate_imei(imei: str) -> bool:
 
 def fetch_imei_info(imei: str):
     """
-    Fetch device details from tacdb.csv based on the TAC (first 8 digits).
+    Fetch device details from DB (primary) or tacdb.csv (fallback).
     """
+    from .models import TacRecord
+
     tac = imei[:8]
+    valid = validate_imei(imei)
+    base = {
+        "imei": imei,
+        "tac": tac,
+        "valid": valid
+    }
+
+    # --- Primary: DB lookup ---
+    try:
+        record = TacRecord.objects.get(tac=tac)
+        return {
+            **base,
+            "brand": record.brand,
+            "name": record.name,
+            "aka": record.aka,
+            "found": True
+        }
+    except TacRecord.DoesNotExist:
+        pass # fall through to CSV
+
+    # --- Fallback: CSV (kept during transition) ---
     file_path = os.path.join(settings.BASE_DIR, 'tacdb.csv')
     
     if not os.path.exists(file_path):
          return {
-             "imei": imei,
-             "valid": validate_imei(imei),
+             **base,
              "error": "TAC database not found."
          }
+
 
     try:
         with open(file_path, mode='r', encoding='utf-8') as csvfile:

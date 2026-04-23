@@ -51,3 +51,22 @@ class Allocation(models.Model):
 
     def __str__(self):
         return f"Allocated: {self.product.imei_number}"
+
+class TacRecord(models.Model):
+    tac         = models.CharField(max_length=8, unique=True, db_index=True)
+    brand       = models.CharField(max_length=100, blank=True, default='')
+    name        = models.CharField(max_length=200, blank=True, default='')
+    aka         = models.JSONField(default=list, blank=True)   # stored as JSON array
+    contributor = models.CharField(max_length=200, blank=True, default='')
+    comment     = models.TextField(blank=True, default='')
+    gsmarena_1  = models.URLField(blank=True, default='')
+    gsmarena_2  = models.URLField(blank=True, default='')
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['tac']
+
+    def __str__(self):
+        return f"{self.tac} — {self.brand} {self.name}"
+

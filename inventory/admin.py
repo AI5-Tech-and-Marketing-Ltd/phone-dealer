@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Product, Allocation, Condition
+from .models import Product, Allocation, Condition, TacRecord
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -15,3 +16,10 @@ class AllocationAdmin(admin.ModelAdmin):
 @admin.register(Condition)
 class ConditionAdmin(admin.ModelAdmin):
     list_display = ['name', 'store', 'description']
+
+@admin.register(TacRecord)
+class TacRecordAdmin(admin.ModelAdmin):
+    list_display  = ['tac', 'brand', 'name', 'contributor']
+    list_filter   = ['brand']
+    search_fields = ['tac', 'brand', 'name']
+

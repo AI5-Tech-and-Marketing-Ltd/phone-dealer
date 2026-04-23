@@ -181,7 +181,10 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
 }
+
 
 # Simple JWT Configuration
 SIMPLE_JWT = {
@@ -245,8 +248,10 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Admin Portal - Billing',        'description': '🔐 SuperAdmin – billing administration'},
         {'name': 'Admin Portal - Products',       'description': '🔐 SuperAdmin – product administration'},
         {'name': 'Admin Portal - Allocations',    'description': '🔐 SuperAdmin – allocation administration'},
+        {'name': 'Admin Portal - TAC',            'description': '🔐 SuperAdmin – TAC database management'},
     ],
 }
+
 
 # Cloudinary Storage
 CLOUDINARY_STORAGE = {
